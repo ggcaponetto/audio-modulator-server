@@ -13,7 +13,8 @@
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start": "npm run start-socket & react-scripts start",
+    "start": "npm run install && npm run build && npm run start-socket & react-scripts start",
+    "start-dev": "npm run start-socket & react-scripts start",
     "start-socket": "node server/socketApp.js",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
