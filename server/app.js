@@ -1,19 +1,11 @@
-// server/app.js
-const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
-
+const PORT = 3005;
+const express = require('express')
+var path = require('path');
 const app = express();
 
-// Setup logger
-app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms'));
+const buildFolderPath = 'build';
+app.use(express.static(buildFolderPath));
 
-// Serve static assets
-app.use(express.static(path.resolve(__dirname, '..', 'build')));
-
-// Always return the main index.html, so react-router render the route in the client
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
-});
-
-module.exports = app;
+app.listen(PORT, function () {
+  console.log('AudioModulator app is listening on port ' +  PORT);
+})

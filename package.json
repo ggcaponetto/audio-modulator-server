@@ -7,14 +7,13 @@
     "morgan": "^1.8.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
-    "socket.io": "^2.0.3",
-    "react-scripts": "1.0.10"
+    "socket.io": "^2.0.3"
   },
   "devDependencies": {
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start": "npm run install && npm run build && npm run start-socket & react-scripts start",
+    "start": "npm run start-socket & node server/app.js",
     "start-dev": "npm run start-socket & react-scripts start",
     "start-socket": "node server/socketApp.js",
     "build": "react-scripts build",
