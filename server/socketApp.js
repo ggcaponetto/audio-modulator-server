@@ -1,4 +1,4 @@
-const PORT = 3006;
+const PORT = 3001;
 var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
