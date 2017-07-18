@@ -13,7 +13,7 @@
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start": "npm run start-socket & node server/app.js",
+    "start": "npm run build && npm run start-socket & node server/app.js",
     "start-dev": "npm run start-socket & react-scripts start",
     "start-socket": "node server/socketApp.js",
     "build": "react-scripts build",
