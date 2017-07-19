@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 
-const io = require('socket.io-client');
-
 const SOCKET_PORT = 8080;
 
 function getFormattedOutput(output){
@@ -23,6 +21,7 @@ class AudioModulator extends Component {
   }
 
   componentDidMount(){
+    const self = this;
     const onMIDISuccess = ( midiAccess ) => {
       console.log( "MIDI ready!" );
       this.setState({
@@ -37,15 +36,14 @@ class AudioModulator extends Component {
 
     navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
 
-    var socket = io.connect('http://localhost:' + SOCKET_PORT);
-    socket.on('news', (data) => {
-      console.log(data);
-      this.setState({
-        socketMessages: this.state.socketMessages.concat(data)
+    var host = 'ws://localhost:5000';
+    var ws = new WebSocket(host);
+    ws.onmessage = (event) => {
+      console.log('Got message', event);
+      self.setState({
+        socketMessages: self.state.socketMessages.concat(event.data)
       });
-      socket.emit('my other event', { my: 'data' });
-    });
-    console.log(`Socket listeners have been set up. Using port: ${SOCKET_PORT}`, socket);
+    };
   }
 
   getOutputs(){
