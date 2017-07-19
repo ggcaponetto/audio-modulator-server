@@ -2,7 +2,7 @@ const express = require('express')
 var path = require('path');
 const app = express();
 
-const APP_PORT = 3000;
+const APP_PORT = process.env.PORT;
 
 const buildFolderPath = 'build';
 app.use(express.static(buildFolderPath));

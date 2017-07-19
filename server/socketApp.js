@@ -2,7 +2,7 @@ var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-const WS_PORT = 8080;
+const WS_PORT = process.env.PORT;
 server.listen(WS_PORT);
 console.log('socketApp listening on port: ' + WS_PORT);
 
