@@ -14,7 +14,7 @@
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start" : "concurrently --kill-others \"npm run start-socket\" \"npm run start-app\"",
+    "start" : "npm run install && npm run build && concurrently --kill-others \"npm run start-socket\" \"npm run start-app\"",
     "start-socket": "node server/socketApp.js",
     "start-app": "node server/app.js",
     "start-dev": "concurrently --kill-others \"npm run start-socket\" \"react-scripts start\"",
