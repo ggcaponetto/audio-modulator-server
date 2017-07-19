@@ -34,7 +34,7 @@ class AudioModulator extends Component {
 
     navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
 
-    var host = 'ws://murmuring-dusk-99045.herokuapp.com/';
+    var host = 'ws://murmuring-dusk-99045.herokuapp.com:3000';
     var ws = new WebSocket(host);
     ws.onmessage = (event) => {
       console.log('Got message', event);
