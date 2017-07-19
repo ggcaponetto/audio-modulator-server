@@ -4,10 +4,10 @@ var io = require('socket.io')(server);
 
 const WS_PORT = 8080;
 server.listen(WS_PORT);
-console.log('Server listening on port: ' + WS_PORT);
+console.log('socketApp listening on port: ' + WS_PORT);
 
 io.on('connection', function (socket) {
-  console.log('Socket connection open on port: ' + WS_PORT);
+  console.log('Socket.io connection open on port: ' + WS_PORT);
   console.log('Emitting new message. (initial)');
   socket.emit('news', { hello: 'world' });
   setInterval(() => {

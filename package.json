@@ -14,9 +14,10 @@
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start" : "concurrently --kill-others \"npm run start-socket\" \"node server/app.js\"",
-    "start-dev": "concurrently --kill-others \"npm run start-socket\" \"react-scripts start\"",
+    "start" : "concurrently --kill-others \"npm run start-socket\" \"npm run start-app\"",
     "start-socket": "node server/socketApp.js",
+    "start-app": "node server/app.js",
+    "start-dev": "concurrently --kill-others \"npm run start-socket\" \"react-scripts start\"",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
