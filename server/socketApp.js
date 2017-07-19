@@ -2,7 +2,7 @@ var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
-const PORT = 64000;
+const PORT = 8080;
 server.listen(PORT);
 
 io.on('connection', function (socket) {
