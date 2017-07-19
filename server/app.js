@@ -1,12 +1,28 @@
-const express = require('express')
-var path = require('path');
-const app = express();
+var WebSocketServer = require("ws").Server
+var http = require("http")
+var express = require("express")
+var app = express()
+var port = process.env.PORT || 3000;
 
-const APP_PORT = process.env.PORT || 3000;
+app.use(express.static(__dirname + "/../build/"))
 
-const buildFolderPath = 'build';
-app.use(express.static(buildFolderPath));
+var server = http.createServer(app)
+server.listen(port)
 
-app.listen(APP_PORT, function () {
-  console.log('AudioModulator app is listening on port ' +  APP_PORT);
+console.log("http server listening on %d", port)
+
+var wss = new WebSocketServer({server: server})
+console.log("websocket server created")
+
+wss.on("connection", function(ws) {
+  var id = setInterval(function() {
+    console.log("Sending msg..");
+    ws.send(JSON.stringify(new Date()), function() {  })
+  }, 1000);
+
+  console.log("websocket connection open")
+  ws.on("close", function() {
+    console.log("websocket connection close")
+    clearInterval(id)
+  })
 })

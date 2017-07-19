@@ -36,7 +36,7 @@ class AudioModulator extends Component {
 
     navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
 
-    var host = 'ws://localhost:5000';
+    var host = 'ws://localhost:3000';
     var ws = new WebSocket(host);
     ws.onmessage = (event) => {
       console.log('Got message', event);
