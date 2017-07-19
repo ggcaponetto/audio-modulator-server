@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start" : "concurrently --kill-others \"npm run start-socket\" \"node server/app.js\"",
-    "start-dev": "npm run start-socket & react-scripts start",
+    "start-dev": "concurrently --kill-others \"npm run start-socket\" \"react-scripts start\"",
     "start-socket": "node server/socketApp.js",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
