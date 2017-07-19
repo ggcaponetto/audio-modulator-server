@@ -8,13 +8,14 @@
     "morgan": "^1.8.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
-    "socket.io": "^2.0.3"
+    "socket.io": "^2.0.3",
+    "react-scripts": "1.0.10"
   },
   "devDependencies": {
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start" : "npm install --production && npm install --development && npm run build && concurrently --kill-others \"npm run start-socket\" \"npm run start-app\"",
+    "start" : "npm install && npm run build && concurrently --kill-others \"npm run start-socket\" \"npm run start-app\"",
     "start-socket": "node server/socketApp.js",
     "start-app": "node server/app.js",
     "start-dev": "concurrently --kill-others \"npm run start-socket\" \"react-scripts start\"",
