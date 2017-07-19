@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 
-const SOCKET_PORT = 8080;
-
 function getFormattedOutput(output){
   return "ID: " + output.id +
   ", Manufacturer: " + output.manufacturer + ", Name: " + output.name;
@@ -36,7 +34,7 @@ class AudioModulator extends Component {
 
     navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
 
-    var host = 'ws://localhost:3000';
+    var host = 'ws://murmuring-dusk-99045.herokuapp.com/';
     var ws = new WebSocket(host);
     ws.onmessage = (event) => {
       console.log('Got message', event);
