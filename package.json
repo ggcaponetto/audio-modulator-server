@@ -16,8 +16,9 @@
   },
   "scripts": {
     "start": "npm install && npm run build && concurrently --kill-others \"npm run start-app\"",
+    "start-dev": "npm run build && concurrently --kill-others \"npm run start-app\"",
     "start-app": "node server/app.js",
-    "build": "npm run pack-config && react-scripts build",
+    "build": "react-scripts build && npm run pack-config",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "pack-config" : "node src/setup.js"
