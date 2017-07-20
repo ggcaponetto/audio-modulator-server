@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+const config = require('./config-production.json');
 
 function getFormattedOutput(output){
   return "ID: " + output.id +
@@ -19,6 +20,7 @@ class AudioModulator extends Component {
   }
 
   componentDidMount(){
+    console.log('AudioModulator loaded config: ', JSON.stringify(config, null, 4));
     const self = this;
     const onMIDISuccess = ( midiAccess ) => {
       console.log( "MIDI ready!" );
@@ -34,7 +36,8 @@ class AudioModulator extends Component {
 
     navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
 
-    var host = 'ws://murmuring-dusk-99045.herokuapp.com:5555';
+    var host = 'ws://'+config.host+':'+config.port+'';
+    console.log('Opening socket on: ' + host);
     var ws = new WebSocket(host);
     ws.onmessage = (event) => {
       console.log('Got message', event);

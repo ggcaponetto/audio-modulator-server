@@ -1,7 +1,8 @@
 const config = {
-  test: 'testvar'
+  name: 'AudioModulator',
+  host: 'https://murmuring-dusk-99045.herokuapp.com/'
 };
 
 module.exports = {
-  config: config
+  config
 }
