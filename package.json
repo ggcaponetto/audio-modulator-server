@@ -15,8 +15,10 @@
     "react-scripts": "1.0.10"
   },
   "scripts": {
-    "start": "NODE_ENV=production npm install && npm run build && concurrently --kill-others \"npm run start-app\"",
-    "start-dev": "NODE_ENV=development npm install && npm run build && concurrently --kill-others \"npm run start-app\"",
+    "start": "npm run build && concurrently --kill-others \"NODE_ENV=production npm run start-app\"",
+    "start-dev": "npm run build && concurrently --kill-others \"NODE_ENV=development npm run start-app\"",
+    "install-start": "npm install && npm run build && concurrently --kill-others \"NODE_ENV=production npm run start-app\"",
+    "install-start-dev": "npm install && npm run build && concurrently --kill-others \"NODE_ENV=development npm run start-app\"",
     "start-app": "node server/app.js",
     "build": "react-scripts build && npm run build-custom",
     "build-custom": "node src/build-custom.js",

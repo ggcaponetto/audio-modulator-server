@@ -47,6 +47,8 @@ class AudioModulator extends Component {
           host = config.ws_localhost+':'+config.port+'';
         } else if(config.env === 'production'){
           host = config.wss_host+'/';
+        } else {
+          throw new Error('Unknown config.env: ', config);
         }
         console.log('Opening socket on: ' + host);
         var ws = new WebSocket(host);
@@ -59,7 +61,7 @@ class AudioModulator extends Component {
 
       } catch (e){
         console.log("Could not parse and load the configuration passed to the client.", e);
-        console.log("JSON you wanted to parse: ", window.AM_DATA);
+        console.log("JSON you wanted to parse: ", document.getElementById('am_data').innerHTML);
       }
     }
   }

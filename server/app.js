@@ -10,14 +10,15 @@ require.extensions['.html'] = function (module, filename) {
     module.exports = fs.readFileSync(filename, 'utf8');
 };
 var index = require('../build_custom/index.html');
-console.log('Loaded index.html file as string: ', index);
-
 // inject the heroku port inside config
 config.port = port;
 if(process.env.NODE_ENV === 'development'){
   config.env = 'development';
 } else if(process.env.NODE_ENV === 'production'){
   config.env = 'production';
+} else {
+  console.log('No NODE_ENV variable supplied.');
+  throw new Error('No NODE_ENV variable supplied.', JSON.stringify(process.env, null, 4));
 }
 
 app.use(express.static(__dirname + "/../build"));
