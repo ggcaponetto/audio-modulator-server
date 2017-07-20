@@ -35,15 +35,33 @@ class AudioModulator extends Component {
 
     navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
 
-    // var host = 'wss://'+config.host+':'+config.port+'';
-    // console.log('Opening socket on: ' + host);
-    // var ws = new WebSocket(host);
-    // ws.onmessage = (event) => {
-    //   console.log('Got message', event);
-    //   self.setState({
-    //     socketMessages: self.state.socketMessages.concat(event.data)
-    //   });
-    // };
+    window.onload = () => {
+      console.log("Setting up the client connection to the websocket.");
+      let config =  null;
+      try {
+        config = JSON.parse(document.getElementById('am_data').innerHTML);
+        console.log("Parsed configuration: ", JSON.stringify(config, 4, null));
+
+        let host = null;
+        if(config.env === 'development'){
+          host = config.ws_localhost+':'+config.port+'';
+        } else if(config.env === 'production'){
+          host = config.wss_host+':'+config.port+'';
+        }
+        console.log('Opening socket on: ' + host);
+        var ws = new WebSocket(host);
+        ws.onmessage = (event) => {
+          console.log('Got message', event);
+          self.setState({
+            socketMessages: self.state.socketMessages.concat(event.data)
+          });
+        };
+
+      } catch (e){
+        console.log("Could not parse and load the configuration passed to the client.", e);
+        console.log("JSON you wanted to parse: ", window.AM_DATA);
+      }
+    }
   }
 
   getOutputs(){
