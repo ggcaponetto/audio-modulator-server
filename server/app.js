@@ -1,4 +1,4 @@
-var WebSocketServer = require("ws").Server
+var WebSocketServer = require("wss").Server
 var http = require("http")
 var express = require("express")
 var app = express()
