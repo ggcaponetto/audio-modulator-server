@@ -46,7 +46,7 @@ class AudioModulator extends Component {
         if(config.env === 'development'){
           host = config.ws_localhost+':'+config.port+'';
         } else if(config.env === 'production'){
-          host = config.wss_host+':'+config.port+'';
+          host = config.wss_host+'/';
         }
         console.log('Opening socket on: ' + host);
         var ws = new WebSocket(host);
