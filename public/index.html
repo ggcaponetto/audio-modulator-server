@@ -10,6 +10,7 @@
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <script> window.AM_DATA = __AM_DATA__ </script>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -25,7 +26,6 @@
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
-    <div id="config"></div>
     <div id="root"></div>
     <!--
       This HTML file is a template.
@@ -37,16 +37,5 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-    <script>
-      window.onload = function(){
-        console.log('Loading configuration file...');
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open( "GET", "%PUBLIC_URL%/config-production.json", false ); // false for synchronous request
-        xmlHttp.send( null );
-        var response = xmlHttp.responseText;
-        document.getElementById('config').innerHTML = response;
-        console.log('Loading configuration file...done.');
-      };
-    </script>
   </body>
 </html>
