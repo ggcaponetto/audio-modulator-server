@@ -5,6 +5,14 @@ function getFormattedOutput(output){
   ", Manufacturer: " + output.manufacturer + ", Name: " + output.name;
 }
 
+function sendMiddleC( midiAccess, portID ) {
+  var noteOnMessage = [0x90, 60, 0x7f];    // note on, middle C, full velocity
+  var output = midiAccess.outputs.get(portID);
+  output.send( noteOnMessage );  //omitting the timestamp means send immediately.
+  output.send( [0x80, 60, 0x40], window.performance.now() + 1000.0 ); // Inlined array creation- note off, middle C,
+                                                                      // release velocity = 64, timestamp = now + 1000ms.
+}
+
 class AudioModulator extends Component {
 
   constructor(props, context){
@@ -53,7 +61,12 @@ class AudioModulator extends Component {
         console.log('Opening socket on: ' + host);
         var ws = new WebSocket(host);
         ws.onmessage = (event) => {
-          console.log('Got message', event);
+          console.log('Got message: ', event.data);
+          const message = event.data;
+          if(message.midiTest){
+            console.log('Sending middle C note on full velocity.');
+            sendMiddleC(this.state.midi, this.state.output.id);
+          }
           self.setState({
             socketMessages: self.state.socketMessages.concat(event.data)
           });

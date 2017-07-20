@@ -42,8 +42,9 @@ console.log("Websocket server created.")
 
 wss.on("connection", function(ws) {
   var id = setInterval(function() {
+    const message = { midiTest: true };
     console.log("Sending msg..");
-    ws.send(JSON.stringify(new Date()), function() {  })
+    ws.send(JSON.stringify(message), function(){});
   }, 1000);
 
   console.log("Websocket connection opened.")
