@@ -1,6 +1,6 @@
 {
   "name": "audio-modulator",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "concurrently": "^3.5.0",
@@ -8,11 +8,20 @@
     "morgan": "^1.8.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
+    "react-scripts": "1.0.10",
     "socket.io": "^2.0.3",
-    "react-scripts": "1.0.10"
+    "ws": "^3.0.0"
   },
   "devDependencies": {
-    "react-scripts": "1.0.10"
+    "react-scripts": "1.0.10",
+    "eslint": "^3.14.1",
+    "eslint-config-airbnb": "^14.0.0",
+    "eslint-config-airbnb-base": "^11.0.1",
+    "eslint-plugin-babel": "^4.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx": "0.0.2",
+    "eslint-plugin-jsx-a11y": "^3.0.2",
+    "eslint-plugin-react": "^6.9.0"
   },
   "scripts": {
     "start": "npm run build && concurrently --kill-others \"NODE_ENV=production npm run start-app\"",

@@ -1,76 +1,78 @@
+/* eslint-env browser */
 import React, { Component } from 'react';
 
-function getFormattedOutput(output){
-  return "ID: " + output.id +
-  ", Manufacturer: " + output.manufacturer + ", Name: " + output.name;
+function getFormattedOutput(output) {
+  return `ID: ${output.id
+  }, Manufacturer: ${output.manufacturer}, Name: ${output.name}`;
 }
 
 function sendMiddleC(context) {
-  var noteOnMessage = [0x90, 0x35, 0x7f];    // note on, middle C, full velocity
-  var output = context.state.output;
-  console.log('Sending ' + JSON.stringify(noteOnMessage) + ' to: ', output);
-  output.send( noteOnMessage );  //omitting the timestamp means send immediately.
+  const noteOnMessage = [0x90, 0x35, 0x7f];    // note on, middle C, full velocity
+  const output = context.state.output;
+  console.log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
+  output.send(noteOnMessage);  // omitting the timestamp means send immediately.
 }
 
-function onMIDIMessage( event ) {
-  var str = "MIDI message received at timestamp " + event.timestamp + "[" + event.data.length + " bytes]: ";
-  for (var i=0; i<event.data.length; i++) {
-    str += "0x" + event.data[i].toString(16) + " ";
+function onMIDIMessage(event) {
+  let str = `MIDI message received at timestamp ${event.timestamp}[${event.data.length} bytes]: `;
+  for (let i = 0; i < event.data.length; i++) {
+    str += `0x${event.data[i].toString(16)} `;
   }
-  console.log( str );
+  console.log(str);
 }
 
-function startLoggingMIDIInput( midiAccess, indexOfPort ) {
+function injectLoggerToMidiInputs(midiAccess) {
   console.log('Start loggin midi input.');
-  midiAccess.inputs.forEach( function(entry) {entry.onmidimessage = onMIDIMessage;});
+  midiAccess.inputs.forEach((entry) => {
+    // eslint-disable-next-line no-param-reassign
+    entry.onmidimessage = onMIDIMessage;
+  });
+  return midiAccess;
 }
 
 class AudioModulator extends Component {
 
-  constructor(props, context){
+  constructor(props, context) {
     super(props, context);
     this.state = {
       midi: null,
       isMidiReady: false,
       output: null,
       socketMessages: []
-    }
+    };
     this.getOutputs = this.getOutputs.bind(this);
   }
 
-  componentDidMount(){
+  componentDidMount() {
     // console.log('AudioModulator loaded config: ', JSON.stringify(config, null, 4));
     const self = this;
-    const onMIDISuccess = ( midiAccess ) => {
+    const onMIDISuccess = (midiAccess) => {
       self.setState({
         isMidiReady: true,
-        midi: midiAccess
+        midi: injectLoggerToMidiInputs(midiAccess)
       }, () => {
         // midi is ready
-        console.log( "MIDI ready!" );
-
-        startLoggingMIDIInput(self.state.midi);
-        console.log("Setting up the client connection to the websocket.");
-        let config =  null;
+        console.log('MIDI ready!');
+        let config = null;
         try {
           config = JSON.parse(document.getElementById('am_data').innerHTML);
-          console.log("Parsed configuration: ", JSON.stringify(config, 4, null));
+          console.log('Parsed configuration: ', JSON.stringify(config, 4, null));
 
           let host = null;
-          if(config.env === 'development'){
-            host = config.ws_localhost+':'+config.port+'';
-          } else if(config.env === 'production'){
-            host = config.wss_host+'/';
+          if (config.env === 'development') {
+            host = `${config.ws_localhost}:${config.port}`;
+          } else if (config.env === 'production') {
+            host = `${config.wss_host}/`;
           } else {
             throw new Error('Unknown config.env: ', config);
           }
-          console.log('Opening socket on: ' + host);
-          var ws = new WebSocket(host);
+          console.log(`Opening socket on: ${host}`);
+          const ws = new WebSocket(host);
           ws.onmessage = (event) => {
-            if(self.state.output){
+            if (self.state.output) {
               console.log('Got message: ', event.data);
               const message = JSON.parse(event.data);
-              if(message.midiTest){
+              if (message.midiTest) {
                 // console.log('Sending middle C note on full velocity.');
                 sendMiddleC(self);
               } else {
@@ -79,51 +81,52 @@ class AudioModulator extends Component {
               self.setState({
                 socketMessages: self.state.socketMessages.concat(event.data)
               });
-            } else{
+            } else {
               console.log('No valid midi output selected. Ignoring ws messages.');
             }
           };
-
-        } catch (e){
-          console.log("Could not parse and load the configuration passed to the client.", e);
-          console.log("JSON you wanted to parse: ", document.getElementById('am_data').innerHTML);
+        } catch (e) {
+          console.log('Could not parse and load the configuration passed to the client.', e);
+          console.log('JSON you wanted to parse: ', document.getElementById('am_data').innerHTML);
         }
       });
-    }
+    };
 
     const onMIDIFailure = (msg) => {
-      console.log( "Failed to get MIDI access - " + msg );
-    }
+      console.log(`Failed to get MIDI access - ${msg}`);
+    };
 
-    navigator.requestMIDIAccess( { sysex: true } ).then( onMIDISuccess, onMIDIFailure );
+    navigator.requestMIDIAccess({ sysex: true }).then(onMIDISuccess, onMIDIFailure);
   }
 
-  getOutputs(){
+  getOutputs() {
     const self = this;
-    const getOutputDevices = ( midiAccess ) => {
+    const getOutputDevices = (midiAccess) => {
       const outputs = [];
-      for (var entry of midiAccess.outputs) {
-        const output = entry[1];
+      midiAccess.outputs.forEach((entry) => {
+        const output = entry;
         // console.log( "Output port [type:'" + output.type + "'] id:'" + output.id +
         //   "' manufacturer:'" + output.manufacturer + "' name:'" + output.name +
         //   "' version:'" + output.version + "'" );
         outputs.push(
           <div outputId={output.id}>
             {getFormattedOutput(output)}
-            <button onClick={() => {
-              self.setState({
-                output
-              }, () => {
-                console.log('Changed midi output to: ', getFormattedOutput(self.state.output));
-              });
-            }}>
+            <button
+              onClick={() => {
+                self.setState({
+                  output
+                }, () => {
+                  console.log('Changed midi output to: ', getFormattedOutput(self.state.output));
+                });
+              }}
+            >
               select
             </button>
           </div>
         );
-      }
+      });
       return outputs;
-    }
+    };
     const outputDevices = getOutputDevices(self.state.midi);
     return (
       <div>

@@ -1,0 +1,20 @@
+{
+  "extends": "airbnb",
+  "rules": {
+    "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
+    "comma-dangle": ["warn", "never"],
+    "react/prefer-stateless-function": ["warn"],
+    "no-useless-constructor": ["warn"],
+    'import/prefer-default-export': ["warn"],
+    'no-plusplus': ["error", { "allowForLoopAfterthoughts": true }],
+    "import/no-extraneous-dependencies": ["error",
+         {
+           "devDependencies": true,
+           "optionalDependencies": true,
+           "peerDependencies": true
+         }
+       ],
+    "react/forbid-prop-types": 1,
+    "react/no-unused-prop-types": ["warn"]
+  }
+}
