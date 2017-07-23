@@ -1,9 +1,18 @@
 /* eslint-env browser */
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 function getFormattedOutput(output) {
-  return `ID: ${output.id
-  }, Manufacturer: ${output.manufacturer}, Name: ${output.name}`;
+  // return `ID: ${output.id
+  // }, Manufacturer: ${output.manufacturer}, Name: ${output.name}`;
+  if(!output){
+    return 'No MIDI output';
+  }
+  if(output.manufacturer){
+    return `${output.manufacturer}, ${output.name}`;
+  } else {
+    return `${output.name}`;
+  }
 }
 
 function sendMiddleC(context) {
@@ -22,7 +31,7 @@ function onMIDIMessage(event) {
 }
 
 function injectLoggerToMidiInputs(midiAccess) {
-  console.log('Start loggin midi input.');
+  console.log('Start loggin MIDI input.');
   midiAccess.inputs.forEach((entry) => {
     // eslint-disable-next-line no-param-reassign
     entry.onmidimessage = onMIDIMessage;
@@ -37,8 +46,7 @@ class AudioModulator extends Component {
     this.state = {
       midi: null,
       isMidiReady: false,
-      output: null,
-      socketMessages: []
+      output: null
     };
     this.getOutputs = this.getOutputs.bind(this);
   }
@@ -71,16 +79,7 @@ class AudioModulator extends Component {
           ws.onmessage = (event) => {
             if (self.state.output) {
               console.log('Got message: ', event.data);
-              const message = JSON.parse(event.data);
-              if (message.midiTest) {
-                // console.log('Sending middle C note on full velocity.');
-                sendMiddleC(self);
-              } else {
-                console.log('Not a midiTest message.');
-              }
-              self.setState({
-                socketMessages: self.state.socketMessages.concat(event.data)
-              });
+              self.props.onMessage(event.data);
             } else {
               console.log('No valid midi output selected. Ignoring ws messages.');
             }
@@ -105,22 +104,44 @@ class AudioModulator extends Component {
       const outputs = [];
       midiAccess.outputs.forEach((entry) => {
         const output = entry;
-        // console.log( "Output port [type:'" + output.type + "'] id:'" + output.id +
-        //   "' manufacturer:'" + output.manufacturer + "' name:'" + output.name +
-        //   "' version:'" + output.version + "'" );
         outputs.push(
           <div outputId={output.id}>
-            {getFormattedOutput(output)}
+            <p style={{ color: 'white', fontFamily: 'Arial'}}>
+              {getFormattedOutput(output)}
+            </p>
             <button
+              style={{ color: 'white', fontFamily: 'Arial', padding: '5px'}}
               onClick={() => {
                 self.setState({
                   output
                 }, () => {
-                  console.log('Changed midi output to: ', getFormattedOutput(self.state.output));
+                  console.log('Changed MIDI output to: ', getFormattedOutput(self.state.output));
+                  self.props.onMIDIOutputChange(self.state.output);
                 });
               }}
             >
-              select
+              Select
+            </button>
+          </div>
+        );
+        // push a null midi selector
+        outputs.push(
+          <div outputId={`none`}>
+            <p style={{ color: 'white', fontFamily: 'Arial'}}>
+              {`No MIDI output`}
+            </p>
+            <button
+              style={{ color: 'white', fontFamily: 'Arial', padding: '5px'}}
+              onClick={() => {
+                self.setState({
+                  output: null
+                }, () => {
+                  console.log('Changed midi output to: ', 'No MIDI output');
+                  self.props.onMIDIOutputChange(self.state.output);
+                });
+              }}
+            >
+              Select
             </button>
           </div>
         );
@@ -137,19 +158,25 @@ class AudioModulator extends Component {
 
   render() {
     return (
-      <div id="audioModulator">
-        <h2>Welcome to AudioModulator, please choose your midi output.</h2>
-        <h3>Midi {this.state.isMidiReady ? 'is' : 'is not'} ready.</h3>
-        <h3>
-          Selected output: <span style={{ color: 'red' }}>{this.state.output ? getFormattedOutput(this.state.output) : 'none'}</span>.
+      <div id="audioModulator" style={{ backgroundColor: 'black' }}>
+        <h3 style={{ color: 'white', fontFamily: 'Arial'}}>
+          Please choose your midi output.
         </h3>
+        <p style={{ color: 'white', fontFamily: 'Arial'}}>
+          Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
+        </p>
+        <p style={{ color: 'white', fontFamily: 'Arial'}}>
+          Selected output: <span style={{}}>{getFormattedOutput(this.state.output)}.</span>
+        </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
-        <div className="socketMessages">
-          {JSON.stringify(this.state.socketMessages, null, 4)}
-        </div>
       </div>
     );
   }
+}
+
+AudioModulator.propTypes = {
+  onMIDIOutputChange: PropTypes.func.isRequired,
+  onMessage: PropTypes.func.isRequired
 }
 
 export default AudioModulator;
