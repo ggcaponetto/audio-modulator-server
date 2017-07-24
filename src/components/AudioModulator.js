@@ -68,10 +68,10 @@ class AudioModulator extends Component {
           let websocketHost = null;
           if (config.env === 'production') {
             websocketHost = `${config.wss_host}:${config.port}`;
-          } else if (config.env === 'production') {
+          } else if (config.env === 'development') {
             websocketHost = `${config.ws_host}:${config.port}`;
           } else {
-            throw new Error('Unsupported "confi.env", please check the NODE_ENV supplied to the start script.', config.env);
+            throw new Error('Unsupported "config.env", please check the NODE_ENV supplied to the start script.', config.env);
           }
           console.log(`Opening socket on: ${websocketHost}`);
           const ws = new WebSocket(websocketHost);
