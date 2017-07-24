@@ -28,10 +28,12 @@
   "scripts": {
     "start": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=production npm run start-server\"",
     "start-dev": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=development npm run start-server\"",
-    "start-hot": "react-scripts start",
+    "start-hot": "npm run restore-public && npm run prepare-hot-public-folder && react-scripts start",
     "start-server": "node server/app.js",
     "build": "react-scripts build",
-    "build-custom": "react-scripts build && node src/build-scripts/build-custom.js",
+    "build-custom": "npm run restore-public && react-scripts build && node src/build-scripts/build-custom.js",
+    "restore-public": "node src/build-scripts/restore-public-folder.js",
+    "prepare-hot-public-folder": "NODE_ENV=development node src/build-scripts/prepare-hot-public-folder.js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

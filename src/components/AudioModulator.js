@@ -105,7 +105,7 @@ class AudioModulator extends Component {
       midiAccess.outputs.forEach((entry) => {
         const output = entry;
         outputs.push(
-          <div outputId={output.id}>
+          <div key={`${output.id}`}>
             <p style={{ color: 'white', fontFamily: 'Arial' }}>
               {getFormattedOutput(output)}
             </p>
@@ -126,7 +126,7 @@ class AudioModulator extends Component {
         );
         // push a null midi selector
         outputs.push(
-          <div outputId={'none'}>
+          <div key={'none'}>
             <p style={{ color: 'white', fontFamily: 'Arial' }}>
               {'No MIDI output'}
             </p>
