@@ -17,22 +17,19 @@ require.extensions['.html'] = function (module, filename) {
 
 const index = require('../build/index.html');
 // inject the heroku port inside config
-config.port = port;
-if (process.env.NODE_ENV === 'development') {
-  config.env = 'development';
-} else if (process.env.NODE_ENV === 'production') {
-  config.env = 'production';
-} else {
-  console.log('No NODE_ENV variable supplied.');
-  throw new Error('No NODE_ENV variable supplied.', JSON.stringify(process.env, null, 4));
-}
+const NODE_ENV = process.env.NODE_ENV;
+console.log(`Running server/app.js with NODE_ENV=${NODE_ENV}.`);
+config.development.port = port;
+config.production.port = port;
+config.development.env = NODE_ENV;
+config.production.env = NODE_ENV;
 
 app.use(express.static(`${__dirname}/../build-custom-no-index`));
 app.use('/', (req, res) => {
-  const modified = index.replace('__AM_DATA__', JSON.stringify(config));
+  const modified = index.replace('__AM_DATA__', JSON.stringify(config[`${NODE_ENV}`], null, 4));
   res.set('Content-Type', 'text/html');
   res.send(new Buffer(modified));
-  console.log('Sent index.html (from build folder) with config injection.');
+  console.log('Sent index.html (from build folder) with config injection.', JSON.stringify(config[NODE_ENV], null, 4));
 });
 
 const server = http.createServer(app);

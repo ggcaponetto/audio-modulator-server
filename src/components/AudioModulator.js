@@ -5,14 +5,13 @@ import PropTypes from 'prop-types';
 function getFormattedOutput(output) {
   // return `ID: ${output.id
   // }, Manufacturer: ${output.manufacturer}, Name: ${output.name}`;
-  if(!output){
+  if (!output) {
     return 'No MIDI output';
   }
-  if(output.manufacturer){
+  if (output.manufacturer) {
     return `${output.manufacturer}, ${output.name}`;
-  } else {
-    return `${output.name}`;
   }
+  return `${output.name}`;
 }
 
 function sendMiddleC(context) {
@@ -66,22 +65,23 @@ class AudioModulator extends Component {
           config = JSON.parse(document.getElementById('am_data').innerHTML);
           console.log('Parsed configuration: ', JSON.stringify(config, 4, null));
 
-          let host = null;
-          if (config.env === 'development') {
-            host = `${config.ws_localhost}:${config.port}`;
+          let websocketHost = null;
+          if (config.env === 'production') {
+            websocketHost = `${config.wss_host}:${config.port}`;
           } else if (config.env === 'production') {
-            host = `${config.wss_host}/`;
+            websocketHost = `${config.ws_host}:${config.port}`;
           } else {
-            throw new Error('Unknown config.env: ', config);
+            throw new Error('Unsupported "confi.env", please check the NODE_ENV supplied to the start script.', config.env);
           }
-          console.log(`Opening socket on: ${host}`);
-          const ws = new WebSocket(host);
+          console.log(`Opening socket on: ${websocketHost}`);
+          const ws = new WebSocket(websocketHost);
           ws.onmessage = (event) => {
             if (self.state.output) {
               console.log('Got message: ', event.data);
               self.props.onMessage(event.data);
+              sendMiddleC(self);
             } else {
-              console.log('No valid midi output selected. Ignoring ws messages.');
+              console.log('No valid midi output selected. Ignoring websocket message.');
             }
           };
         } catch (e) {
@@ -106,11 +106,11 @@ class AudioModulator extends Component {
         const output = entry;
         outputs.push(
           <div outputId={output.id}>
-            <p style={{ color: 'white', fontFamily: 'Arial'}}>
+            <p style={{ color: 'white', fontFamily: 'Arial' }}>
               {getFormattedOutput(output)}
             </p>
             <button
-              style={{ color: 'white', fontFamily: 'Arial', padding: '5px'}}
+              style={{ color: 'white', fontFamily: 'Arial', padding: '5px' }}
               onClick={() => {
                 self.setState({
                   output
@@ -126,12 +126,12 @@ class AudioModulator extends Component {
         );
         // push a null midi selector
         outputs.push(
-          <div outputId={`none`}>
-            <p style={{ color: 'white', fontFamily: 'Arial'}}>
-              {`No MIDI output`}
+          <div outputId={'none'}>
+            <p style={{ color: 'white', fontFamily: 'Arial' }}>
+              {'No MIDI output'}
             </p>
             <button
-              style={{ color: 'white', fontFamily: 'Arial', padding: '5px'}}
+              style={{ color: 'white', fontFamily: 'Arial', padding: '5px' }}
               onClick={() => {
                 self.setState({
                   output: null
@@ -159,13 +159,13 @@ class AudioModulator extends Component {
   render() {
     return (
       <div id="audioModulator" style={{ backgroundColor: 'black' }}>
-        <h3 style={{ color: 'white', fontFamily: 'Arial'}}>
+        <h3 style={{ color: 'white', fontFamily: 'Arial' }}>
           Please choose your midi output.
         </h3>
-        <p style={{ color: 'white', fontFamily: 'Arial'}}>
+        <p style={{ color: 'white', fontFamily: 'Arial' }}>
           Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
         </p>
-        <p style={{ color: 'white', fontFamily: 'Arial'}}>
+        <p style={{ color: 'white', fontFamily: 'Arial' }}>
           Selected output: <span style={{}}>{getFormattedOutput(this.state.output)}.</span>
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
@@ -177,6 +177,6 @@ class AudioModulator extends Component {
 AudioModulator.propTypes = {
   onMIDIOutputChange: PropTypes.func.isRequired,
   onMessage: PropTypes.func.isRequired
-}
+};
 
 export default AudioModulator;

@@ -7,6 +7,7 @@
     "express": "^4.15.3",
     "fs-extra": "^4.0.0",
     "morgan": "^1.8.2",
+    "prop-types": "^15.5.10",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-scripts": "1.0.10",
@@ -26,7 +27,7 @@
   },
   "scripts": {
     "start": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=production npm run start-server\"",
-    "start-development": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=development npm run start-server\"",
+    "start-dev": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=development npm run start-server\"",
     "start-hot": "react-scripts start",
     "start-server": "node server/app.js",
     "build": "react-scripts build",
