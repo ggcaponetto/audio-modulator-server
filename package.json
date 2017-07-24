@@ -25,13 +25,12 @@
     "eslint-plugin-react": "^6.9.0"
   },
   "scripts": {
-    "start": "npm run build && concurrently --kill-others \"NODE_ENV=production npm run start-app\"",
-    "start-dev": "npm run build && concurrently --kill-others \"NODE_ENV=development npm run start-app\"",
-    "install-start": "npm install && npm run build && concurrently --kill-others \"NODE_ENV=production npm run start-app\"",
-    "install-start-dev": "npm install && npm run build && concurrently --kill-others \"NODE_ENV=development npm run start-app\"",
-    "start-app": "node server/app.js",
-    "build": "react-scripts build && npm run build-custom",
-    "build-custom": "node src/build-custom.js",
+    "start": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=production npm run start-server\"",
+    "start-development": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=development npm run start-server\"",
+    "start-hot": "react-scripts start",
+    "start-server": "node server/app.js",
+    "build": "react-scripts build",
+    "build-custom": "react-scripts build && node src/build-scripts/build-custom.js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   }

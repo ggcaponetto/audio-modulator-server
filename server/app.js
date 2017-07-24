@@ -15,7 +15,7 @@ require.extensions['.html'] = function (module, filename) {
   module.exports = fs.readFileSync(filename, 'utf8');
 };
 
-const index = require('../build_custom/index.html');
+const index = require('../build/index.html');
 // inject the heroku port inside config
 config.port = port;
 if (process.env.NODE_ENV === 'development') {
@@ -27,21 +27,18 @@ if (process.env.NODE_ENV === 'development') {
   throw new Error('No NODE_ENV variable supplied.', JSON.stringify(process.env, null, 4));
 }
 
-app.use(express.static(`${__dirname}/../build`));
+app.use(express.static(`${__dirname}/../build-custom-no-index`));
 app.use('/', (req, res) => {
-  console.log('Get on /');
   const modified = index.replace('__AM_DATA__', JSON.stringify(config));
-  console.log('Initial html: ', index);
-  console.log('Modified html: ', modified);
   res.set('Content-Type', 'text/html');
   res.send(new Buffer(modified));
-  console.log('Sent modified index.html file.');
+  console.log('Sent index.html (from build folder) with config injection.');
 });
 
 const server = http.createServer(app);
 server.listen(port);
 
-console.log('Http server listening on %d .', port);
+console.log('Http server listening on port %d .', port);
 
 const wss = new WebSocketServer({ server });
 console.log('Websocket server created.');
