@@ -67,7 +67,7 @@ class AudioModulator extends Component {
 
           let websocketHost = null;
           if (config.env === 'production') {
-            websocketHost = `${config.wss_host}:${config.port}`;
+            websocketHost = `${config.wss_host}`;
           } else if (config.env === 'development') {
             websocketHost = `${config.ws_host}:${config.port}`;
           } else {
