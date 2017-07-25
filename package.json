@@ -37,5 +37,8 @@
     "prepare-hot-public-folder": "NODE_ENV=development node src/build-scripts/prepare-hot-public-folder.js",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "proxy": {
+    "ws": true
   }
 }
