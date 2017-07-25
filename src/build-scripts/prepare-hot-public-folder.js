@@ -10,7 +10,7 @@ require.extensions['.html'] = function (module, filename) {
 const index = require('../../public/index.html');
 
 // the port
-const port = process.env.PORT || 3000;
+const port = 5000;
 
 // prepare the config
 const NODE_ENV = process.env.NODE_ENV;
