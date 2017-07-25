@@ -26,7 +26,8 @@
     "eslint-plugin-react": "^6.9.0"
   },
   "scripts": {
-    "start": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=production npm run start-server\"",
+    "start": "concurrently --kill-others \"NODE_ENV=production npm run start-server\"",
+    "install-and-build": "npm install && npm run build-custom",
     "start-dev": "npm install && npm run build-custom && concurrently --kill-others \"NODE_ENV=development npm run start-server\"",
     "start-hot": "npm run restore-public && npm run prepare-hot-public-folder && react-scripts start",
     "start-server": "node server/app.js",
