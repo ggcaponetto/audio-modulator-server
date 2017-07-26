@@ -9,17 +9,16 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div className="App-header" style={{ backgroundColor: 'black' }}>
-          <h2 style={{ color: 'white', fontFamily: 'Arial' }}>Welcome to AudioModulator</h2>
+        <div className="midiInfo">
+          <AudioModulator
+            onMIDIOutputChange={(output) => {
+              console.log('MIDI output changed: ', output);
+            }}
+            onMessage={(data) => {
+              console.log('Message received: ', data);
+            }}
+          />
         </div>
-        <AudioModulator
-          onMIDIOutputChange={(output) => {
-            console.log('MIDI output changed: ', output);
-          }}
-          onMessage={(data) => {
-            console.log('Message received: ', data);
-          }}
-        />
       </div>
     );
   }

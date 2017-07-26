@@ -101,48 +101,44 @@ class AudioModulator extends Component {
   getOutputs() {
     const self = this;
     const getOutputDevices = (midiAccess) => {
-      const outputs = [];
+      const outputs = [
+        <div
+          role="button"
+          key={'none'}
+          className="midiOutputSelection"
+          onClick={() => {
+            self.setState({
+              output: null
+            }, () => {
+              console.log('Changed midi output to: ', 'No MIDI output');
+              self.props.onMIDIOutputChange(self.state.output);
+            });
+          }}
+        >
+          <p style={{ color: 'white', fontFamily: 'Arial' }}>
+            {'No MIDI output'}
+          </p>
+        </div>
+      ];
       midiAccess.outputs.forEach((entry) => {
         const output = entry;
         outputs.push(
-          <div key={`${output.id}`}>
+          <div
+            role="button"
+            key={`${output.id}`}
+            className="midiOutputSelection"
+            onClick={() => {
+              self.setState({
+                output
+              }, () => {
+                console.log('Changed midi output to: ', 'No MIDI output');
+                self.props.onMIDIOutputChange(self.state.output);
+              });
+            }}
+          >
             <p style={{ color: 'white', fontFamily: 'Arial' }}>
               {getFormattedOutput(output)}
             </p>
-            <button
-              style={{ color: 'white', fontFamily: 'Arial', padding: '5px' }}
-              onClick={() => {
-                self.setState({
-                  output
-                }, () => {
-                  console.log('Changed MIDI output to: ', getFormattedOutput(self.state.output));
-                  self.props.onMIDIOutputChange(self.state.output);
-                });
-              }}
-            >
-              Select
-            </button>
-          </div>
-        );
-        // push a null midi selector
-        outputs.push(
-          <div key={'none'}>
-            <p style={{ color: 'white', fontFamily: 'Arial' }}>
-              {'No MIDI output'}
-            </p>
-            <button
-              style={{ color: 'white', fontFamily: 'Arial', padding: '5px' }}
-              onClick={() => {
-                self.setState({
-                  output: null
-                }, () => {
-                  console.log('Changed midi output to: ', 'No MIDI output');
-                  self.props.onMIDIOutputChange(self.state.output);
-                });
-              }}
-            >
-              Select
-            </button>
           </div>
         );
       });
