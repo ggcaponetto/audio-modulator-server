@@ -39,8 +39,8 @@ class App extends Component {
       return(<h1>AudioModulator is loading...</h1>);
     }
     return (
-      <div className="App" style={{ margin: 0, padding: 0 }}>
-        <div className="midiInfo">
+      <div className="App container">
+        <div className="midiInfo row">
           <AudioModulator
             config={this.state.config}
             onMIDIOutputChange={(output) => {

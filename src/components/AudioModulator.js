@@ -9,7 +9,7 @@ function getFormattedOutput(output) {
   // return `ID: ${output.id
   // }, Manufacturer: ${output.manufacturer}, Name: ${output.name}`;
   if (!output) {
-    return 'No MIDI output';
+    return bypassMIDIMoutput;
   }
   if (output.manufacturer) {
     return `${output.manufacturer}, ${output.name}`;
@@ -40,6 +40,10 @@ function injectLoggerToMidiInputs(midiAccess) {
   });
   return midiAccess;
 }
+
+const bypassMIDIMoutput = "Bypass";
+const grey = '#b5b5b5';
+const selectedOutputStyle= { color: grey };
 
 class AudioModulator extends Component {
 
@@ -107,19 +111,21 @@ class AudioModulator extends Component {
         <div
           role="button"
           key={'none'}
-          className="midiOutputSelection"
+          className="midiOutputSelection row"
           onClick={() => {
             self.setState({
               output: null
             }, () => {
-              log('Changed midi output to: ', 'No MIDI output');
+              log('Changed midi output to: ', bypassMIDIMoutput);
               self.props.onMIDIOutputChange(self.state.output);
             });
           }}
         >
-          <p>
-            {'No MIDI output'}
-          </p>
+          <div className="midiOutput">
+            <span style={this.state.output === null ? selectedOutputStyle : null}>
+              {bypassMIDIMoutput}
+            </span>
+          </div>
         </div>
       ];
       midiAccess.outputs.forEach((entry) => {
@@ -128,19 +134,27 @@ class AudioModulator extends Component {
           <div
             role="button"
             key={`${output.id}`}
-            className="midiOutputSelection"
+            className="midiOutputSelection row"
             onClick={() => {
               self.setState({
                 output
               }, () => {
-                log('Changed midi output to: ', 'No MIDI output');
+                log('Changed midi output to: ', bypassMIDIMoutput);
                 self.props.onMIDIOutputChange(self.state.output);
               });
             }}
           >
-            <p>
-              {getFormattedOutput(output)}
-            </p>
+            <div className="midiOutput">
+              <span
+                style={
+                  this.state.output && (this.state.output.id === output.id) ?
+                  selectedOutputStyle :
+                  null
+                }
+              >
+                {getFormattedOutput(output)}
+              </span>
+            </div>
           </div>
         );
       });
@@ -155,13 +169,13 @@ class AudioModulator extends Component {
   }
 
   render() {
+
     return (
-      <div id="audioModulator">
+      <div id="audioModulator row">
         <p>
-          Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
-        </p>
-        <p>
-          Selected output: <span style={{}}>{getFormattedOutput(this.state.output)}.</span>
+          Your browser's MIDI is {this.state.isMidiReady ? 'ready' : 'not ready'}.
+          The selected MIDI output is <span style={selectedOutputStyle}>{getFormattedOutput(this.state.output)}</span>.
+          Click on the labels to switch midi output.
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
       </div>
