@@ -117,7 +117,7 @@ class AudioModulator extends Component {
             });
           }}
         >
-          <p style={{ color: 'white', fontFamily: 'Arial' }}>
+          <p>
             {'No MIDI output'}
           </p>
         </div>
@@ -138,7 +138,7 @@ class AudioModulator extends Component {
               });
             }}
           >
-            <p style={{ color: 'white', fontFamily: 'Arial' }}>
+            <p>
               {getFormattedOutput(output)}
             </p>
           </div>
@@ -156,11 +156,12 @@ class AudioModulator extends Component {
 
   render() {
     return (
-      <div id="audioModulator" style={{ backgroundColor: 'black' }}>
-        <p style={{ color: 'white', fontFamily: 'Arial' }}>
+      <div id="audioModulator">
+        <h1>Midi settings</h1>
+        <p>
           Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
         </p>
-        <p style={{ color: 'white', fontFamily: 'Arial' }}>
+        <p>
           Selected output: <span style={{}}>{getFormattedOutput(this.state.output)}.</span>
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
