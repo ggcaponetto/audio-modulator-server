@@ -6,8 +6,11 @@
 # testing
 /coverage
 
-# production
-#/build
+# script generated
+/build
+/build-custom
+/build-custom-no-index
+/public
 
 # misc
 .DS_Store

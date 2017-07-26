@@ -2,6 +2,7 @@ const pjson = require('../package.json');
 
 const config = {
   production: {
+    port: 3000,
     name: 'AudioModulator',
     version: pjson.version,
     https_host: 'https://murmuring-dusk-99045.herokuapp.com',
@@ -10,6 +11,7 @@ const config = {
     ws_host: 'ws://murmuring-dusk-99045.herokuapp.com'
   },
   development: {
+    port: 5000,
     name: 'AudioModulator',
     version: pjson.version,
     https_host: 'https://localhost',

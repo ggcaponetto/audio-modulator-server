@@ -8,7 +8,8 @@ const app = express();
 const fs = require('fs');
 const config = require('../config/config.js').config;
 
-const port = process.env.PORT || 3000;
+const NODE_ENV = process.env.NODE_ENV;
+const port = process.env.PORT || config[NODE_ENV].port;
 
 require.extensions['.html'] = function (module, filename) {
   // eslint-disable-next-line no-param-reassign
@@ -17,7 +18,6 @@ require.extensions['.html'] = function (module, filename) {
 
 const index = require('../build/index.html');
 // inject the heroku port inside config
-const NODE_ENV = process.env.NODE_ENV;
 console.log(`Running server/app.js with NODE_ENV=${NODE_ENV}.`);
 config.development.port = port;
 config.production.port = port;

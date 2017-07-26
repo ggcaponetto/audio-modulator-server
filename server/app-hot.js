@@ -6,8 +6,10 @@ const express = require('express');
 
 const app = express();
 const fs = require('fs');
+const config = require('../config/config.js').config;
 
-const port = 5000;
+const NODE_ENV = process.env.NODE_ENV;
+const port = config[NODE_ENV].port;
 
 require.extensions['.html'] = function (module, filename) {
   // eslint-disable-next-line no-param-reassign
@@ -17,7 +19,7 @@ require.extensions['.html'] = function (module, filename) {
 const server = http.createServer(app);
 server.listen(port);
 
-console.log('Http server listening on port %d .', port);
+console.log('Http server (dev/hot) listening on port %d .', port);
 
 const wss = new WebSocketServer({ server });
 console.log('Websocket server (dev/hot) created.');

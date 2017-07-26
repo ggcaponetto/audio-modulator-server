@@ -8,23 +8,14 @@ require.extensions['.html'] = function (module, filename) {
 };
 // read "index.html" from "public" folder
 const index = require('../../public/index.html');
-
-// the port
-const port = 5000;
-
 // prepare the config
 const NODE_ENV = process.env.NODE_ENV;
-const modifiedConfiguration = config;
-modifiedConfiguration.development.port = port;
-modifiedConfiguration.production.port = port;
-modifiedConfiguration.development.env = NODE_ENV;
-modifiedConfiguration.production.env = NODE_ENV;
+const modifiedConfiguration = config.development;
+modifiedConfiguration.env = NODE_ENV;
 console.log(`Running src/build-scripts/prepare-hot-public-folder.js with NODE_ENV=${NODE_ENV}.`);
-const configJson = JSON.stringify(modifiedConfiguration[`${NODE_ENV}`], null, 4);
+const configJson = JSON.stringify(modifiedConfiguration, null, 4);
 console.log('Injecting configuration into "index.html" file.', configJson);
-
 const modifiedIndex = index.replace('__AM_DATA__', configJson);
-
 // delete "index.html" from "public" folder
 fs.unlink(`${__dirname}/../../public/index.html`, (err_3) => {
   if (err_3) {
