@@ -8,14 +8,17 @@ class App extends Component {
   }
   render() {
     return (
-      <div className="App">
+      <div className="App" style={{ margin: 0, padding: 0 }}>
         <div className="midiInfo">
           <AudioModulator
             onMIDIOutputChange={(output) => {
-              console.log('MIDI output changed: ', output);
+              console.log('onMIDIOutputChange: ', output);
             }}
             onMessage={(data) => {
-              console.log('Message received: ', data);
+              console.log('onMessage: ', data);
+            }}
+            onMIDIStatusChange={(data) => {
+              console.log('onMIDIStatusChange: ', data);
             }}
           />
         </div>

@@ -59,6 +59,7 @@ class AudioModulator extends Component {
         midi: injectLoggerToMidiInputs(midiAccess)
       }, () => {
         // midi is ready
+        this.props.onMIDIStatusChange({ isRedy: true });
         console.log('MIDI ready!');
         let config = null;
         try {
@@ -93,6 +94,7 @@ class AudioModulator extends Component {
 
     const onMIDIFailure = (msg) => {
       console.log(`Failed to get MIDI access - ${msg}`);
+      this.props.onMIDIStatusChange({ isRedy: false });
     };
 
     navigator.requestMIDIAccess({ sysex: true }).then(onMIDISuccess, onMIDIFailure);
@@ -155,9 +157,6 @@ class AudioModulator extends Component {
   render() {
     return (
       <div id="audioModulator" style={{ backgroundColor: 'black' }}>
-        <h3 style={{ color: 'white', fontFamily: 'Arial' }}>
-          Please choose your midi output. (ererer)
-        </h3>
         <p style={{ color: 'white', fontFamily: 'Arial' }}>
           Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
         </p>
@@ -172,7 +171,8 @@ class AudioModulator extends Component {
 
 AudioModulator.propTypes = {
   onMIDIOutputChange: PropTypes.func.isRequired,
-  onMessage: PropTypes.func.isRequired
+  onMessage: PropTypes.func.isRequired,
+  onMIDIStatusChange: PropTypes.func.isRequired
 };
 
 export default AudioModulator;
