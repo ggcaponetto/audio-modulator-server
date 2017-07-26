@@ -9,7 +9,7 @@ const config = {
     http_host: 'http://murmuring-dusk-99045.herokuapp.com',
     wss_host: 'wss://murmuring-dusk-99045.herokuapp.com',
     ws_host: 'ws://murmuring-dusk-99045.herokuapp.com',
-    isConsoleLogEnabled: false
+    isConsoleLogEnabled: true
   },
   development: {
     port: 5000,
