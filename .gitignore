@@ -7,10 +7,10 @@
 /coverage
 
 # script generated
-/build
-/build-custom
-/build-custom-no-index
-/public
+#/build
+#/build-custom
+#/build-custom-no-index
+#/public
 
 # misc
 .DS_Store
