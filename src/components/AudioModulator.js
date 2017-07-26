@@ -160,7 +160,7 @@ class AudioModulator extends Component {
     return (
       <div id="audioModulator" style={{ backgroundColor: 'black' }}>
         <h3 style={{ color: 'white', fontFamily: 'Arial' }}>
-          Please choose your midi output. (hahaha)
+          Please choose your midi output. (ererer)
         </h3>
         <p style={{ color: 'white', fontFamily: 'Arial' }}>
           Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
