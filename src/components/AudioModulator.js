@@ -2,6 +2,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import Logger from '../util/logger';
+let log = null;
+
 function getFormattedOutput(output) {
   // return `ID: ${output.id
   // }, Manufacturer: ${output.manufacturer}, Name: ${output.name}`;
@@ -17,7 +20,7 @@ function getFormattedOutput(output) {
 function sendMiddleC(context) {
   const noteOnMessage = [0x90, 0x35, 0x7f];    // note on, middle C, full velocity
   const output = context.state.output;
-  console.log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
+  log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
   output.send(noteOnMessage);  // omitting the timestamp means send immediately.
 }
 
@@ -26,11 +29,11 @@ function onMIDIMessage(event) {
   for (let i = 0; i < event.data.length; i++) {
     str += `0x${event.data[i].toString(16)} `;
   }
-  console.log(str);
+  log(str);
 }
 
 function injectLoggerToMidiInputs(midiAccess) {
-  console.log('Start loggin MIDI input.');
+  log('Start loggin MIDI input.');
   midiAccess.inputs.forEach((entry) => {
     // eslint-disable-next-line no-param-reassign
     entry.onmidimessage = onMIDIMessage;
@@ -48,10 +51,11 @@ class AudioModulator extends Component {
       output: null
     };
     this.getOutputs = this.getOutputs.bind(this);
+
+    log = new Logger("AudioModulator", this.props.config).log;
   }
 
   componentDidMount() {
-    // console.log('AudioModulator loaded config: ', JSON.stringify(config, null, 4));
     const self = this;
     const onMIDISuccess = (midiAccess) => {
       self.setState({
@@ -60,12 +64,9 @@ class AudioModulator extends Component {
       }, () => {
         // midi is ready
         this.props.onMIDIStatusChange({ isRedy: true });
-        console.log('MIDI ready!');
-        let config = null;
+        log('MIDI is ready.');
+        let config = this.props.config;
         try {
-          config = JSON.parse(document.getElementById('am_data').innerHTML);
-          console.log('Parsed configuration: ', JSON.stringify(config, 4, null));
-
           let websocketHost = null;
           if (config.env === 'production') {
             websocketHost = `${config.wss_host}`;
@@ -74,26 +75,25 @@ class AudioModulator extends Component {
           } else {
             throw new Error('Unsupported "config.env", please check the NODE_ENV supplied to the start script.', config.env);
           }
-          console.log(`Opening socket on: ${websocketHost}`);
+          log(`Opening socket on: ${websocketHost}`);
           const ws = new WebSocket(websocketHost);
           ws.onmessage = (event) => {
             if (self.state.output) {
-              console.log('Got message: ', event.data);
+              log('Got message: ', event.data);
               self.props.onMessage(event.data);
               sendMiddleC(self);
             } else {
-              console.log('No valid midi output selected. Ignoring websocket message.');
+              log('No valid midi output selected. Ignoring websocket message.');
             }
           };
         } catch (e) {
-          console.log('Could not parse and load the configuration passed to the client.', e);
-          console.log('JSON you wanted to parse: ', document.getElementById('am_data').innerHTML);
+          log('Could not create the websocket using config: ', config);
         }
       });
     };
 
     const onMIDIFailure = (msg) => {
-      console.log(`Failed to get MIDI access - ${msg}`);
+      log(`Failed to get MIDI access - ${msg}`);
       this.props.onMIDIStatusChange({ isRedy: false });
     };
 
@@ -112,7 +112,7 @@ class AudioModulator extends Component {
             self.setState({
               output: null
             }, () => {
-              console.log('Changed midi output to: ', 'No MIDI output');
+              log('Changed midi output to: ', 'No MIDI output');
               self.props.onMIDIOutputChange(self.state.output);
             });
           }}
@@ -133,7 +133,7 @@ class AudioModulator extends Component {
               self.setState({
                 output
               }, () => {
-                console.log('Changed midi output to: ', 'No MIDI output');
+                log('Changed midi output to: ', 'No MIDI output');
                 self.props.onMIDIOutputChange(self.state.output);
               });
             }}
@@ -157,7 +157,6 @@ class AudioModulator extends Component {
   render() {
     return (
       <div id="audioModulator">
-        <h1>Midi settings</h1>
         <p>
           Midi status: {this.state.isMidiReady ? 'ready' : 'not ready'}.
         </p>
@@ -171,6 +170,7 @@ class AudioModulator extends Component {
 }
 
 AudioModulator.propTypes = {
+  config: PropTypes.object.isRequired,
   onMIDIOutputChange: PropTypes.func.isRequired,
   onMessage: PropTypes.func.isRequired,
   onMIDIStatusChange: PropTypes.func.isRequired
