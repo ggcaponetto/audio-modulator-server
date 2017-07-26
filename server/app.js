@@ -42,11 +42,10 @@ console.log('Websocket server created.');
 
 wss.on('connection', (ws) => {
   const id = setInterval(() => {
-    const message = { midiTest: true };
-    console.log('Sending msg..');
+    const message = { type: "heartBeat", timestampServerEmit: Date.now() };
+    console.log('Sending heartBeat.');
     ws.send(JSON.stringify(message), () => {});
   }, 1000);
-
   console.log('Websocket connection opened.');
   ws.on('close', () => {
     console.log('Websocket connection closed.');

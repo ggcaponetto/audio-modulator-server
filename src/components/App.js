@@ -44,13 +44,16 @@ class App extends Component {
           <AudioModulator
             config={this.state.config}
             onMIDIOutputChange={(output) => {
-              log('onMIDIOutputChange: ', output);
+              // log('onMIDIOutputChange: ', output);
             }}
             onMessage={(data) => {
-              log('onMessage: ', data);
+              // log('onMessage: ', data);
             }}
             onMIDIStatusChange={(data) => {
-              log('onMIDIStatusChange: ', data);
+              // log('onMIDIStatusChange: ', data);
+            }}
+            onAverageLatencyUpdate={(averageLatency) => {
+              // log('onAverageLatencyUpdate: ', averageLatency);
             }}
           />
         </div>

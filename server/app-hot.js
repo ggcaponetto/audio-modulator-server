@@ -26,11 +26,10 @@ console.log('Websocket server (dev/hot) created.');
 
 wss.on('connection', (ws) => {
   const id = setInterval(() => {
-    const message = { midiTest: true };
-    console.log('Sending msg (dev/hot)..');
+    const message = { type: "heartBeat", timestampServerEmit: Date.now() };
+    console.log('Sending heartBeat (dev/hot).');
     ws.send(JSON.stringify(message), () => {});
   }, 1000);
-
   console.log('Websocket connection (dev/hot) opened.');
   ws.on('close', () => {
     console.log('Websocket connection (dev/hot) closed.');
