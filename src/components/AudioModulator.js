@@ -3,7 +3,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import Logger from '../util/logger';
+
 let log = null;
+const bypassMIDIMoutput = 'Bypass';
+const grey = '#b5b5b5';
+const selectedOutputStyle = { color: grey };
 
 function getFormattedOutput(output) {
   // return `ID: ${output.id
@@ -22,14 +26,19 @@ function sendMiddleC(context) {
   const output = context.state.output;
   // log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
   output.send(noteOnMessage);  // omitting the timestamp means send immediately.
+  // Inlined array creation- note off, middle C,
+  // release velocity = 64, timestamp = now + 1000ms.
+  output.send([0x80, 60, 0x40], window.performance.now() + 200.0);
 }
 
 function onMIDIMessage(event) {
+  /* eslint-disable no-unused-vars */
   let str = `MIDI message received at timestamp ${event.timestamp}[${event.data.length} bytes]: `;
   for (let i = 0; i < event.data.length; i++) {
     str += `0x${event.data[i].toString(16)} `;
   }
   // log(str);
+  /* eslint-enable no-unused-vars */
 }
 
 function injectLoggerToMidiInputs(midiAccess) {
@@ -40,10 +49,6 @@ function injectLoggerToMidiInputs(midiAccess) {
   });
   return midiAccess;
 }
-
-const bypassMIDIMoutput = "Bypass";
-const grey = '#b5b5b5';
-const selectedOutputStyle= { color: grey };
 
 class AudioModulator extends Component {
 
@@ -57,37 +62,8 @@ class AudioModulator extends Component {
       averageLatency: 0
     };
     this.getOutputs = this.getOutputs.bind(this);
-    this.getLatency = this.getLatency.bind(this);
-    log = new Logger("AudioModulator", this.props.config).log;
-  }
-
-  getLatency(data){
-    // log('AudioModulator getLatency:', data);
-    const BUFFER_SIZE = 10;
-    const heartBeats = [].concat(this.state.heartBeats);
-    if(heartBeats.length >= BUFFER_SIZE){
-      heartBeats.shift();
-      heartBeats.push(data);
-    } else {
-      heartBeats.push(data);
-    }
-    this.setState({
-      heartBeats
-    }, () => {
-      let totalDelay = 0;
-      heartBeats.forEach((hb, i) => {
-        const diff = hb.timestampClientReceive - hb.timestampServerEmit;
-        // log("Single heartBeat latency (websocket server to client) is: ", diff);
-        totalDelay = totalDelay + diff;
-      });
-      const averageLatency = totalDelay / heartBeats.length;
-      this.props.onAverageLatencyUpdate(averageLatency);
-      this.setState({
-        averageLatency
-      }, () => {
-        sendMiddleC(this);
-      });
-    });
+    this.calculateLatency = this.calculateLatency.bind(this);
+    log = new Logger('AudioModulator', this.props.config).log;
   }
 
   componentDidMount() {
@@ -100,7 +76,7 @@ class AudioModulator extends Component {
         // midi is ready
         this.props.onMIDIStatusChange({ isRedy: true });
         log('MIDI is ready.');
-        let config = this.props.config;
+        const config = this.props.config;
         try {
           let websocketHost = null;
           if (config.env === 'production') {
@@ -113,17 +89,14 @@ class AudioModulator extends Component {
           log(`Opening socket on: ${websocketHost}`);
           const ws = new WebSocket(websocketHost);
           ws.onmessage = (event) => {
-            if (self.state.output) {
-              log('Got websocket data: ', event.data);
-              const data = JSON.parse(event.data);
-              self.props.onMessage(data);
-              if(data.type === "heartBeat"){
-                // log('Got heartBeat: ', data);
-                data.timestampClientReceive = Date.now();
-                self.getLatency(data);
-              }
-            } else {
-              log('No valid midi output selected. Ignoring websocket message.');
+            log('Got websocket data: ', event.data);
+            const data = JSON.parse(event.data);
+            self.props.onMessage(data);
+
+            if (data.type === 'heartBeat') {
+              // log('Got heartBeat: ', data);
+              data.timestampClientReceive = Date.now();
+              self.calculateLatency(data);
             }
           };
         } catch (e) {
@@ -144,6 +117,7 @@ class AudioModulator extends Component {
     const self = this;
     const getOutputDevices = (midiAccess) => {
       const outputs = [
+        // eslint-disable-next-line jsx-a11y/interactive-supports-focus
         <div
           role="button"
           key={'none'}
@@ -167,6 +141,7 @@ class AudioModulator extends Component {
       midiAccess.outputs.forEach((entry) => {
         const output = entry;
         outputs.push(
+          // eslint-disable-next-line jsx-a11y/interactive-supports-focus
           <div
             role="button"
             key={`${output.id}`}
@@ -204,18 +179,50 @@ class AudioModulator extends Component {
     );
   }
 
-  render() {
+  calculateLatency(data) {
+    // log('AudioModulator calculateLatency:', data);
+    const BUFFER_SIZE = 5;
+    const heartBeats = [].concat(this.state.heartBeats);
+    if (heartBeats.length >= BUFFER_SIZE) {
+      heartBeats.shift();
+      heartBeats.push(data);
+    } else {
+      heartBeats.push(data);
+    }
+    this.setState({
+      heartBeats
+    }, () => {
+      let totalDelay = 0;
+      heartBeats.forEach((hb) => {
+        const diff = hb.timestampClientReceive - hb.timestampServerEmit;
+        // log("Single heartBeat latency (websocket server to client) is: ", diff);
+        totalDelay += diff;
+      });
+      const averageLatency = totalDelay / heartBeats.length;
+      this.props.onAverageLatencyUpdate(averageLatency);
+      this.setState({
+        averageLatency
+      }, () => {
+        if (this.props.isHeartBeatEanbled && this.state.output) {
+          sendMiddleC(this);
+        }
+      });
+    });
+  }
 
+  render() {
+    /* eslint-disable max-len */
     return (
       <div id="audioModulator row">
         <p>
-          Your browser's MIDI is {this.state.isMidiReady ? 'ready' : 'not ready'}.
+          Your browser&apos;s MIDI is {this.state.isMidiReady ? 'ready' : 'not ready'}.
           The selected MIDI output is <span style={selectedOutputStyle}>{getFormattedOutput(this.state.output)}</span>.
           Click on the labels to switch midi output. The average latency is {this.state.averageLatency} ms.
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
       </div>
     );
+    /* eslint-enable max-len */
   }
 }
 
@@ -224,7 +231,8 @@ AudioModulator.propTypes = {
   onMIDIOutputChange: PropTypes.func.isRequired,
   onMessage: PropTypes.func.isRequired,
   onMIDIStatusChange: PropTypes.func.isRequired,
-  onAverageLatencyUpdate: PropTypes.func.isRequired
+  onAverageLatencyUpdate: PropTypes.func.isRequired,
+  isHeartBeatEanbled: PropTypes.string.isRequired
 };
 
 export default AudioModulator;

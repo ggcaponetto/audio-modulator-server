@@ -42,6 +42,7 @@ class App extends Component {
       <div className="App container">
         <div className="midiInfo row">
           <AudioModulator
+            isHeartBeatEanbled={true}
             config={this.state.config}
             onMIDIOutputChange={(output) => {
               // log('onMIDIOutputChange: ', output);
