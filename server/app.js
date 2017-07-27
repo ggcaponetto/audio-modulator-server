@@ -42,7 +42,7 @@ console.log('Websocket server created.');
 
 wss.on('connection', (ws) => {
   const id = setInterval(() => {
-    const message = { type: "heartBeat", timestampServerEmit: Date.now() };
+    const message = { type: 'heartBeat', timestampServerEmit: Date.now() };
     console.log('Sending heartBeat.');
     ws.send(JSON.stringify(message), () => {});
   }, 1000);

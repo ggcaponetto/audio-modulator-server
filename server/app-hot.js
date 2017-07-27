@@ -7,6 +7,7 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const config = require('../config/config.js').config;
+const Pool = require('./connectionPool.js').Pool;
 
 const NODE_ENV = process.env.NODE_ENV;
 const port = config[NODE_ENV].port;
@@ -24,15 +25,20 @@ console.log('Http server (dev/hot) listening on port %d .', port);
 const wss = new WebSocketServer({ server });
 console.log('Websocket server (dev/hot) created.');
 
+const pool = new Pool('hotPool');
+
 wss.on('connection', (ws) => {
+  pool.add('somedevice', Date.now());
+  console.log('Connection pool updated: ', JSON.stringify(pool.getPool(), null, 4));
   const id = setInterval(() => {
-    const message = { type: "heartBeat", timestampServerEmit: Date.now() };
+    const message = { type: 'heartBeat', timestampServerEmit: Date.now() };
     console.log('Sending heartBeat (dev/hot).');
     ws.send(JSON.stringify(message), () => {});
   }, 1000);
   console.log('Websocket connection (dev/hot) opened.');
   ws.on('close', () => {
     console.log('Websocket connection (dev/hot) closed.');
+    console.log('Connection pool updated: ', JSON.stringify(pool.getPool(), null, 4));
     clearInterval(id);
   });
 });
