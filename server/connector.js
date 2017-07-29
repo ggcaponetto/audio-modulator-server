@@ -27,7 +27,7 @@ function Connector(name) {
     const id = this.browserRequests.length === 0 ?
     0 :
     this.browserRequests[this.browserRequests.length - 1].id + 1;
-    ;
+
     this.browserRequests.push({ id, timestamp: Date.now() });
     return id;
   };
@@ -42,7 +42,8 @@ function Connector(name) {
   this.toString = () => {
     const simplePairs = [];
     this.pairs.forEach((p) => {
-      p.ws = null;
+      const pair = p;
+      pair.ws = null;
       simplePairs.push(p);
     });
     return JSON.stringify({
@@ -50,7 +51,7 @@ function Connector(name) {
       pairs: simplePairs,
       browserRequests: this.browserRequests
     }, null, 4);
-  }
+  };
 }
 
 module.exports = {

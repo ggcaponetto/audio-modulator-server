@@ -1,6 +1,7 @@
 {
   "extends": "airbnb",
   "rules": {
+    "jsx-a11y/href-no-hash": ["warn"],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "comma-dangle": ["warn", "never"],
     "react/prefer-stateless-function": ["warn"],

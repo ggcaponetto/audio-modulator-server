@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/href-no-hash */
 const Connector = require('./connector.js').Connector;
 
 const run = (name, wss, connector, connectedCallback = null, closedCallback = null) => {
@@ -35,39 +36,39 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
   });
 };
 
-function AMWS(name, wss){
-    this.name = name;
-    this.wss = wss; // WebSocketServer
-    this.connector = new Connector(this.name +  'connector');
-    this.run = () => {
-      run(
-        this.name,
-        this.wss,
-        this.connector,
-        (connector) => {
-          // connected
-          this.connector = connector;
-          this.send(1, { test: 'message1 to 1 (onConnected)' });
-          this.send(1, { test: 'message2 to 1 (onConnected)' });
-          this.send(1, { test: 'message3 to 1 (onConnected)' });
-        },
-        (connector) => {
-          // closed
-          this.connector = connector;
-        });
-    };
-    this.send = (browserRequestId, obj, cb) => {
-      console.log('connector status before sending message: \n', this.connector);
-      this.connector.getPairs()
+function AMWS(name, wss) {
+  this.name = name;
+  this.wss = wss; // WebSocketServer
+  this.connector = new Connector(`${this.name}connector`);
+  this.run = () => {
+    run(
+      this.name,
+      this.wss,
+      this.connector,
+      (connector) => {
+        // connected
+        this.connector = connector;
+        this.send(1, { test: 'message1 to 1 (onConnected)' });
+        this.send(1, { test: 'message2 to 1 (onConnected)' });
+        this.send(1, { test: 'message3 to 1 (onConnected)' });
+      },
+      (connector) => {
+        // closed
+        this.connector = connector;
+      });
+  };
+  this.send = (browserRequestId, obj, cb) => {
+    console.log('connector status before sending message: \n', this.connector);
+    this.connector.getPairs()
       .forEach((pair) => {
-        if(pair.browserRequestId === browserRequestId){
+        if (pair.browserRequestId === browserRequestId) {
           console.log(`${name}: sending ${JSON.stringify(obj)} to pair ${browserRequestId}`);
           pair.ws.send(JSON.stringify(obj), cb);
         }
       });
-    };
+  };
 }
 
 module.exports = {
   AMWS
-}
+};
