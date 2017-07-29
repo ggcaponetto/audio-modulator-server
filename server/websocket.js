@@ -10,9 +10,6 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
     console.log(`${name}: sending a browser request id.`, pairingMessage);
     ws.send(JSON.stringify(pairingMessage), () => {});
     connector.addPair({ browserRequestId, ws, timestamp: Date.now() });
-    console.log('connector status after connection: \n', connector);
-    connectedCallback(connector);
-
     // Send heartbeat
     const id = setInterval(() => {
       const message = { type: 'heartBeat', payload: { timestampServerEmit: Date.now() } };
@@ -26,9 +23,15 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
       clearInterval(id);
       connector.removeBrowserRequest(browserRequestId);
       connector.removePair(browserRequestId);
-      console.log('connector status: \n' + connector.toString());
+
+      // connection closedCallback
+      console.log('connector status after close: \n', connector);
       closedCallback(connector);
     });
+
+    // connection connectedCallback
+    console.log('connector status after connection: \n', connector);
+    connectedCallback(connector);
   });
 };
 
@@ -37,16 +40,21 @@ function AMWS(name, wss){
     this.wss = wss; // WebSocketServer
     this.connector = new Connector(this.name +  'connector');
     this.run = () => {
-      run(this.name, this.wss, this.connector, (connector) => {
-        // connected
-        this.connector = connector;
-        this.send(1, { test: 'message1 to 1 (onConnected)' });
-        this.send(1, { test: 'message2 to 1 (onConnected)' });
-        this.send(1, { test: 'message3 to 1 (onConnected)' });
-      }, (connector) => {
-        // closed
-        this.connector = connector;
-      });
+      run(
+        this.name,
+        this.wss,
+        this.connector,
+        (connector) => {
+          // connected
+          this.connector = connector;
+          this.send(1, { test: 'message1 to 1 (onConnected)' });
+          this.send(1, { test: 'message2 to 1 (onConnected)' });
+          this.send(1, { test: 'message3 to 1 (onConnected)' });
+        },
+        (connector) => {
+          // closed
+          this.connector = connector;
+        });
     };
     this.send = (browserRequestId, obj, cb) => {
       console.log('connector status before sending message: \n', this.connector);

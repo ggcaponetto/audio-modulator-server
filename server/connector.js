@@ -24,9 +24,12 @@ function Connector(name) {
     this.browserRequests = [];
   };
   this.addBrowserRequest = () => {
-    const count = this.browserRequests.length;
-    this.browserRequests.push({ id: count, timestamp: Date.now() });
-    return count;
+    const id = this.browserRequests.length === 0 ?
+    0 :
+    this.browserRequests[this.browserRequests.length - 1].id + 1;
+    ;
+    this.browserRequests.push({ id, timestamp: Date.now() });
+    return id;
   };
   this.removeBrowserRequest = (id) => {
     this.browserRequests.forEach((entry, i) => {
