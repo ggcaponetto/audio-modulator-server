@@ -1,15 +1,17 @@
 const Connector = require('./connector.js').Connector;
 
-const run = (name, wss, connector) => {
+const run = (name, wss, connector, connectedCallback = null, closedCallback = null) => {
+  // hold a reference to the ws connection and browserRequestId
   wss.on('connection', (ws) => {
     console.log(`${name}: connection opened.`);
-
     // Send a unique request id
     const browserRequestId = connector.addBrowserRequest();
-    console.log('connector status: \n' + JSON.stringify(connector));
     const pairingMessage = { type: 'browserRequestId', payload: { browserRequestId } };
-    console.log(`${name}: sending a browser request id.`);
+    console.log(`${name}: sending a browser request id.`, pairingMessage);
     ws.send(JSON.stringify(pairingMessage), () => {});
+    connector.addPair({ browserRequestId, ws, timestamp: Date.now() });
+    console.log('connector status after connection: \n', connector);
+    connectedCallback(connector);
 
     // Send heartbeat
     const id = setInterval(() => {
@@ -23,7 +25,9 @@ const run = (name, wss, connector) => {
       console.log(`${name}: connection closed.`);
       clearInterval(id);
       connector.removeBrowserRequest(browserRequestId);
-      console.log('connector status: \n' + JSON.stringify(connector));
+      connector.removePair(browserRequestId);
+      console.log('connector status: \n' + connector.toString());
+      closedCallback(connector);
     });
   });
 };
@@ -31,9 +35,28 @@ const run = (name, wss, connector) => {
 function AMWS(name, wss){
     this.name = name;
     this.wss = wss; // WebSocketServer
+    this.connector = new Connector(this.name +  'connector');
     this.run = () => {
-      const connector = new Connector(this.name +  'connector');
-      run(this.name, this.wss, connector);
+      run(this.name, this.wss, this.connector, (connector) => {
+        // connected
+        this.connector = connector;
+        this.send(1, { test: 'message1 to 1 (onConnected)' });
+        this.send(1, { test: 'message2 to 1 (onConnected)' });
+        this.send(1, { test: 'message3 to 1 (onConnected)' });
+      }, (connector) => {
+        // closed
+        this.connector = connector;
+      });
+    };
+    this.send = (browserRequestId, obj, cb) => {
+      console.log('connector status before sending message: \n', this.connector);
+      this.connector.getPairs()
+      .forEach((pair) => {
+        if(pair.browserRequestId === browserRequestId){
+          console.log(`${name}: sending ${JSON.stringify(obj)} to pair ${browserRequestId}`);
+          pair.ws.send(JSON.stringify(obj), cb);
+        }
+      });
     };
 }
 

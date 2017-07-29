@@ -240,7 +240,7 @@ AudioModulator.propTypes = {
   onMessage: PropTypes.func.isRequired,
   onMIDIStatusChange: PropTypes.func.isRequired,
   onAverageLatencyUpdate: PropTypes.func.isRequired,
-  isHeartBeatEanbled: PropTypes.string.isRequired
+  isHeartBeatEanbled: PropTypes.bool.isRequired
 };
 
 export default AudioModulator;

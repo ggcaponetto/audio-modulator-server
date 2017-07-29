@@ -7,12 +7,12 @@ function Connector(name) {
   this.clearPairs = () => {
     this.pairs = [];
   };
-  this.addPair = (id, timestamp) => {
-    this.pairs.push({ id, timestamp });
+  this.addPair = (obj) => {
+    this.pairs.push(obj);
   };
-  this.removePair = (id) => {
+  this.removePair = (browserRequestId) => {
     this.pairs.forEach((entry, i) => {
-      if (entry.id === id) {
+      if (entry.browserRequestId === browserRequestId) {
         this.pairs.splice(i, 1);
       }
     });
@@ -36,6 +36,18 @@ function Connector(name) {
     });
   };
   this.getBrowserRequests = () => this.browserRequests;
+  this.toString = () => {
+    const simplePairs = [];
+    this.pairs.forEach((p) => {
+      p.ws = null;
+      simplePairs.push(p);
+    });
+    return JSON.stringify({
+      name: this.name,
+      pairs: simplePairs,
+      browserRequests: this.browserRequests
+    }, null, 4);
+  }
 }
 
 module.exports = {
