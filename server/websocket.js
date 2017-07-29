@@ -59,9 +59,18 @@ function AMWS(name, wss) {
       (connector) => {
         // connected
         this.connector = connector;
-        this.send(1, { test: 'message1 to 1 (onConnected)' });
-        this.send(1, { test: 'message2 to 1 (onConnected)' });
-        this.send(1, { test: 'message3 to 1 (onConnected)' });
+        this.connector.getPairs()
+        .forEach((pair) => {
+          pair.ws.on('message', (data) => {
+            console.log('Got message: ', data);
+            const parsedData = JSON.parse(data);
+            console.log('Parsed message: ', parsedData);
+            if (parsedData.type === 'audiomodulator') {
+              console.log(`browserRequestId -> ${pair.browserRequestId} -> forwarding app message `, parsedData);
+              pair.ws.send(JSON.stringify(parsedData), () => {});
+            }
+          });
+        });
       },
       (connector) => {
         // closed
@@ -71,12 +80,12 @@ function AMWS(name, wss) {
   this.send = (browserRequestId, obj, cb) => {
     console.log('connector status before sending message: \n', this.connector);
     this.connector.getPairs()
-      .forEach((pair) => {
-        if (pair.browserRequestId === browserRequestId) {
-          console.log(`${name}: sending ${JSON.stringify(obj)} to pair ${browserRequestId}`);
-          pair.ws.send(JSON.stringify(obj), cb);
-        }
-      });
+    .forEach((pair) => {
+      if (pair.browserRequestId === browserRequestId) {
+        console.log(`${name}: sending ${JSON.stringify(obj)} to pair ${browserRequestId}`);
+        pair.ws.send(JSON.stringify(obj), cb);
+      }
+    });
   };
 }
 
