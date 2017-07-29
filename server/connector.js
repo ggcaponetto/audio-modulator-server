@@ -23,8 +23,10 @@ function Connector(name) {
   this.clearBrowserRequests = () => {
     this.browserRequests = [];
   };
-  this.addBrowserRequest = (id, timestamp) => {
-    this.browserRequests.push({ id, timestamp });
+  this.addBrowserRequest = () => {
+    const count = this.browserRequests.length;
+    this.browserRequests.push({ id: count, timestamp: Date.now() });
+    return count;
   };
   this.removeBrowserRequest = (id) => {
     this.browserRequests.forEach((entry, i) => {

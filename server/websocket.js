@@ -1,15 +1,22 @@
+const Connector = require('./connector.js').Connector;
 
-const run = (name, wss) => {
+const run = (name, wss, connector) => {
   wss.on('connection', (ws) => {
+    console.log(`${name}: connection opened.`);
+    const browserRequestId = connector.addBrowserRequest();
+    console.log('connector status: \n' + JSON.stringify(connector));
+    // Send heartbeat
     const id = setInterval(() => {
       const message = { type: 'heartBeat', timestampServerEmit: Date.now() };
       console.log(`${name}: sending a heart beat`);
       ws.send(JSON.stringify(message), () => {});
     }, 1000);
-    console.log(`${name}: connection opened.`);
+    // Clear heartbeat interval
     ws.on('close', () => {
       console.log(`${name}: connection closed.`);
       clearInterval(id);
+      connector.removeBrowserRequest(browserRequestId);
+      console.log('connector status: \n' + JSON.stringify(connector));
     });
   });
 };
@@ -18,7 +25,8 @@ function AMWS(name, wss){
     this.name = name;
     this.wss = wss; // WebSocketServer
     this.run = () => {
-      run(this.name, this.wss);
+      const connector = new Connector(this.name +  'connector');
+      run(this.name, this.wss, connector);
     };
 }
 
