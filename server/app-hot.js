@@ -26,4 +26,5 @@ const wss = new WebSocketServer({ server });
 console.log('Websocket server (dev/hot) created.');
 
 const amws = new AMWS('Hot/Dev AMWS', wss);
+
 amws.run();

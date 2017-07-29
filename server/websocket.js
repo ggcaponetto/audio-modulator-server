@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/href-no-hash */
 const Connector = require('./connector.js').Connector;
 
-const run = (name, wss, connector, connectedCallback = null, closedCallback = null) => {
+const run = (name, wss, connector, send, connectedCallback = null, closedCallback = null) => {
   // hold a reference to the ws connection and browserRequestId
   wss.on('connection', (ws) => {
     console.log(`${name}: connection opened.`);
@@ -18,17 +18,6 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
       ws.send(JSON.stringify(message), () => {});
     }, 1000);
 
-    // forward message from app to browser
-    ws.on('message', (data) => {
-      console.log('Got message: ', data);
-      const parsedData = JSON.parse(data);
-      console.log('Parsed message: ', parsedData);
-      if (parsedData.type === 'audiomodulator') {
-        console.log(`${name}: forwarding app message `, parsedData);
-        ws.send(JSON.stringify(parsedData), () => {});
-      }
-    });
-
     // Clear heartbeat interval
     ws.on('close', () => {
       console.log(`${name}: connection closed.`);
@@ -41,6 +30,17 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
       closedCallback(connector);
     });
 
+    ws.on('message', (data) => {
+      console.log('Got message: \n', data);
+      const parsedData = JSON.parse(data);
+      if (parsedData.type === 'audiomodulator') {
+        console.log('redirect to -> all', parsedData);
+        connector.getPairs().forEach((pair) => {
+          send(pair.browserRequestId, parsedData);
+        });
+      }
+    });
+
     // connection connectedCallback
     console.log('connector status after connection: \n', connector);
     connectedCallback(connector);
@@ -51,26 +51,16 @@ function AMWS(name, wss) {
   this.name = name;
   this.wss = wss; // WebSocketServer
   this.connector = new Connector(`${this.name}connector`);
+  this.getConnector = () => this.connector;
   this.run = () => {
     run(
       this.name,
       this.wss,
       this.connector,
+      this.send,
       (connector) => {
         // connected
         this.connector = connector;
-        this.connector.getPairs()
-        .forEach((pair) => {
-          pair.ws.on('message', (data) => {
-            console.log('Got message: ', data);
-            const parsedData = JSON.parse(data);
-            console.log('Parsed message: ', parsedData);
-            if (parsedData.type === 'audiomodulator') {
-              console.log(`browserRequestId -> ${pair.browserRequestId} -> forwarding app message `, parsedData);
-              pair.ws.send(JSON.stringify(parsedData), () => {});
-            }
-          });
-        });
       },
       (connector) => {
         // closed

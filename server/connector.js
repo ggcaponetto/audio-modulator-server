@@ -18,7 +18,9 @@ function Connector(name) {
     });
   };
   this.getPairs = () => this.pairs;
-
+  this.replacePairs = (newPairs) => {
+    this.pairs = newPairs;
+  };
   // Browser request functions
   this.clearBrowserRequests = () => {
     this.browserRequests = [];
