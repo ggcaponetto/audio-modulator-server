@@ -95,7 +95,7 @@ class AudioModulator extends Component {
 
             if (data.type === 'heartBeat') {
               // log('Got heartBeat: ', data);
-              data.timestampClientReceive = Date.now();
+              data.payload.timestampClientReceive = Date.now();
               self.calculateLatency(data);
             }
 
@@ -206,7 +206,7 @@ class AudioModulator extends Component {
     }, () => {
       let totalDelay = 0;
       heartBeats.forEach((hb) => {
-        const diff = hb.timestampClientReceive - hb.payload.timestampServerEmit;
+        const diff = hb.payload.timestampClientReceive - hb.payload.timestampServerEmit;
         // log("Single heartBeat latency (websocket server to client) is: ", diff);
         totalDelay += diff;
       });
