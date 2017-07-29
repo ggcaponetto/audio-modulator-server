@@ -2,9 +2,10 @@
 import React, { Component } from 'react';
 import AudioModulator from './AudioModulator';
 import Logger from '../util/logger';
+
 let log = null;
 
-function parseConfig(){
+function parseConfig() {
   try {
     const config = JSON.parse(document.getElementById('am_data').innerHTML);
     console.log('Parsed configuration: ', JSON.stringify(config, 4, null));
@@ -17,32 +18,32 @@ function parseConfig(){
 }
 
 class App extends Component {
-  constructor(props, context){
+  constructor(props, context) {
     super(props, context);
     this.state = {
       config: null,
       isMounted: false
-    }
+    };
   }
   componentDidMount() {
     this.setState({
       config: parseConfig(),
       isMounted: true
     }, () => {
-      const logger = new Logger("App", this.state.config);
+      const logger = new Logger('App', this.state.config);
       log = logger.log;
-      console.log("App logger has been configured.", logger);
+      console.log('App logger has been configured.', logger);
     });
   }
   render() {
-    if(!this.state.isMounted){
-      return(<h1>AudioModulator is loading...</h1>);
+    if (!this.state.isMounted) {
+      return (<h1>AudioModulator is loading...</h1>);
     }
     return (
       <div className="App container">
         <div className="midiInfo row">
           <AudioModulator
-            isHeartBeatEanbled={true}
+            isHeartBeatEanbled={false}
             config={this.state.config}
             onMIDIOutputChange={(output) => {
               // log('onMIDIOutputChange: ', output);

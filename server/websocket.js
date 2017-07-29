@@ -18,6 +18,14 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
       ws.send(JSON.stringify(message), () => {});
     }, 1000);
 
+    // forward message from app to browser
+    ws.on('message', (data) => {
+      if (data.type === 'audiomodulator') {
+        console.log(`${name}: forwarding app message `, data);
+        ws.send(JSON.stringify(data), () => {});
+      }
+    });
+
     // Clear heartbeat interval
     ws.on('close', () => {
       console.log(`${name}: connection closed.`);

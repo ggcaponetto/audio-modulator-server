@@ -105,6 +105,11 @@ class AudioModulator extends Component {
                 browserRequestId: data.payload.browserRequestId
               });
             }
+
+            if (data.type === 'audiomodulator') {
+              log('Got audiomodulator: ', data);
+              sendMiddleC(self);
+            }
           };
         } catch (e) {
           log('Could not create the websocket using config: ', config);
