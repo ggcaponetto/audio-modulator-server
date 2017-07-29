@@ -22,6 +22,7 @@ const run = (name, wss, connector, connectedCallback = null, closedCallback = nu
     ws.on('message', (data) => {
       console.log('Got message: ', data);
       const parsedData = JSON.parse(data);
+      console.log('Parsed message: ', parsedData);
       if (parsedData.type === 'audiomodulator') {
         console.log(`${name}: forwarding app message `, parsedData);
         ws.send(JSON.stringify(parsedData), () => {});
