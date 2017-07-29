@@ -22,10 +22,10 @@ function getFormattedOutput(output) {
 }
 
 function sendMiddleC(context) {
-  const noteOnMessage = [0x90, 0x35, 0x7f];    // note on, middle C, full velocity
+  const noteOnMessage = [0x90, 0x35, 0x7f]; // note on, middle C, full velocity
   const output = context.state.output;
   // log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
-  output.send(noteOnMessage);  // omitting the timestamp means send immediately.
+  output.send(noteOnMessage); // omitting the timestamp means send immediately.
   // Inlined array creation- note off, middle C,
   // release velocity = 64, timestamp = now + 1000ms.
   output.send([0x80, 60, 0x40], window.performance.now() + 200.0);
@@ -51,7 +51,6 @@ function injectLoggerToMidiInputs(midiAccess) {
 }
 
 class AudioModulator extends Component {
-
   constructor(props, context) {
     super(props, context);
     this.state = {
@@ -159,8 +158,8 @@ class AudioModulator extends Component {
               <span
                 style={
                   this.state.output && (this.state.output.id === output.id) ?
-                  selectedOutputStyle :
-                  null
+                    selectedOutputStyle :
+                    null
                 }
               >
                 {getFormattedOutput(output)}
@@ -217,7 +216,7 @@ class AudioModulator extends Component {
         <p>
           Your browser&apos;s MIDI is {this.state.isMidiReady ? 'ready' : 'not ready'}.
           The selected MIDI output is <span style={selectedOutputStyle}>{getFormattedOutput(this.state.output)}</span>.
-          Click on the labels to switch midi output. The average latency is {this.state.averageLatency} ms.
+          Click on the labels to switch MIDI output. The average latency is {this.state.averageLatency} ms.
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
       </div>

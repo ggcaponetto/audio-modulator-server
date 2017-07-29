@@ -7,6 +7,7 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const config = require('../config/config.js').config;
+const AMWS = require('./websocket.js').AMWS;
 
 const NODE_ENV = process.env.NODE_ENV;
 const port = process.env.PORT || config[NODE_ENV].port;
@@ -35,20 +36,10 @@ app.use('/', (req, res) => {
 const server = http.createServer(app);
 server.listen(port);
 
-console.log('Http server listening on port %d .', port);
+console.log('Http server (production) listening on port %d .', port);
 
 const wss = new WebSocketServer({ server });
-console.log('Websocket server created.');
+console.log('Websocket server (production )created.');
 
-wss.on('connection', (ws) => {
-  const id = setInterval(() => {
-    const message = { type: 'heartBeat', timestampServerEmit: Date.now() };
-    console.log('Sending heartBeat.');
-    ws.send(JSON.stringify(message), () => {});
-  }, 1000);
-  console.log('Websocket connection opened.');
-  ws.on('close', () => {
-    console.log('Websocket connection closed.');
-    clearInterval(id);
-  });
-});
+const amws = new AMWS('Production AMWS', wss);
+amws.run();
