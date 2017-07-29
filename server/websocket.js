@@ -5,9 +5,12 @@ const run = (name, wss, connector) => {
     console.log(`${name}: connection opened.`);
     const browserRequestId = connector.addBrowserRequest();
     console.log('connector status: \n' + JSON.stringify(connector));
+    const pairingMessage = { type: 'browserRequestId', payload: { browserRequestId } };
+    console.log(`${name}: sending a browser request id.`);
+    ws.send(JSON.stringify(pairingMessage), () => {});
     // Send heartbeat
     const id = setInterval(() => {
-      const message = { type: 'heartBeat', timestampServerEmit: Date.now() };
+      const message = { type: 'heartBeat', payload: { timestampServerEmit: Date.now() } };
       console.log(`${name}: sending a heart beat`);
       ws.send(JSON.stringify(message), () => {});
     }, 1000);

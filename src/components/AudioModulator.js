@@ -58,7 +58,8 @@ class AudioModulator extends Component {
       isMidiReady: false,
       output: null,
       heartBeats: [],
-      averageLatency: 0
+      averageLatency: 0,
+      browserRequestId: null
     };
     this.getOutputs = this.getOutputs.bind(this);
     this.calculateLatency = this.calculateLatency.bind(this);
@@ -96,6 +97,13 @@ class AudioModulator extends Component {
               // log('Got heartBeat: ', data);
               data.timestampClientReceive = Date.now();
               self.calculateLatency(data);
+            }
+
+            if (data.type === 'browserRequestId') {
+              log('Got browserRequestId: ', data);
+              self.setState({
+                browserRequestId: data.payload.browserRequestId
+              });
             }
           };
         } catch (e) {
@@ -193,7 +201,7 @@ class AudioModulator extends Component {
     }, () => {
       let totalDelay = 0;
       heartBeats.forEach((hb) => {
-        const diff = hb.timestampClientReceive - hb.timestampServerEmit;
+        const diff = hb.timestampClientReceive - hb.payload.timestampServerEmit;
         // log("Single heartBeat latency (websocket server to client) is: ", diff);
         totalDelay += diff;
       });
@@ -217,6 +225,7 @@ class AudioModulator extends Component {
           Your browser&apos;s MIDI is {this.state.isMidiReady ? 'ready' : 'not ready'}.
           The selected MIDI output is <span style={selectedOutputStyle}>{getFormattedOutput(this.state.output)}</span>.
           Click on the labels to switch MIDI output. The average latency is {this.state.averageLatency} ms.
+          Your device pairing number is: {this.state.browserRequestId !== null ? this.state.browserRequestId : 'Loading...'}
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
       </div>
