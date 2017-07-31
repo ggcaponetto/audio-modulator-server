@@ -30,14 +30,31 @@ const run = (name, wss, connector, send, connectedCallback = null, closedCallbac
       closedCallback(connector);
     });
 
+    // send message to connections
     ws.on('message', (data) => {
       console.log('Got message: \n', data);
       const parsedData = JSON.parse(data);
       if (parsedData.type === 'audiomodulator') {
-        console.log('redirect to -> all', parsedData);
-        connector.getPairs().forEach((pair) => {
-          send(pair.browserRequestId, parsedData);
-        });
+        if (parsedData.target === 'broadcast') {
+          console.log('broadcasting message to all connections.', parsedData);
+          // send message to broadcast
+          connector.getPairs().forEach((pair) => {
+            send(pair.browserRequestId, parsedData);
+          });
+        } else {
+          console.log('sending message to to single connection.', parsedData);
+          // send message to single target
+          connector.getPairs().forEach((pair) => {
+            const target = parseInt(parsedData.target, 10);
+            const brId = parseInt(pair.browserRequestId, 10);
+            if (brId === target) {
+              console.log('connection match ', { brId, target });
+              send(pair.browserRequestId, parsedData);
+            } else {
+              console.log('connection mismatch ', { brId, target });
+            }
+          });
+        }
       }
     });
 
