@@ -1,18 +1,36 @@
 function Connector(name) {
   this.name = name;
   this.pairs = [];
-  this.browserRequests = [];
-  this.phoneRequests = [];
   // Pair functions
   this.clearPairs = () => {
     this.pairs = [];
   };
   this.addPair = (obj) => {
-    this.pairs.push(obj);
+    const id = this.pairs.length === 0 ? 1 : this.pairs[this.pairs.length - 1].id + 1;
+    this.pairs.push(Object.assign(obj, { id, isPaired: false }));
+    return id; // returns the inserted pair id
   };
-  this.removePair = (browserRequestId) => {
-    this.pairs.forEach((entry, i) => {
-      if (entry.browserRequestId === browserRequestId) {
+  this.markPaired = (id) => {
+    console.log(`Marking pair with id ${id} as paired.`);
+    const self = this;
+    this.pairs.forEach((pair, i) => {
+      console.log(`Checking pair with id ${pair.id} needs to be paired`);
+      if (pair.id === id) {
+        console.log(`Checking pair with id ${pair.id} needs to be paired: id match found.`);
+        self.pairs[i].isPaired = true;
+      }
+    });
+  };
+  this.markUnpaired = (id) => {
+    this.pairs.forEach((pair, i) => {
+      if (pair.id === id) {
+        this.pairs[i].isPaired = false;
+      }
+    });
+  };
+  this.removePair = (id) => {
+    this.pairs.forEach((pair, i) => {
+      if (pair.id === id) {
         this.pairs.splice(i, 1);
       }
     });
@@ -20,39 +38,6 @@ function Connector(name) {
   this.getPairs = () => this.pairs;
   this.replacePairs = (newPairs) => {
     this.pairs = newPairs;
-  };
-  // Browser request functions
-  this.clearBrowserRequests = () => {
-    this.browserRequests = [];
-  };
-  this.addBrowserRequest = () => {
-    const id = this.browserRequests.length === 0 ?
-    0 :
-    this.browserRequests[this.browserRequests.length - 1].id + 1;
-
-    this.browserRequests.push({ id, timestamp: Date.now() });
-    return id;
-  };
-  this.removeBrowserRequest = (id) => {
-    this.browserRequests.forEach((entry, i) => {
-      if (entry.id === id) {
-        this.browserRequests.splice(i, 1);
-      }
-    });
-  };
-  this.getBrowserRequests = () => this.browserRequests;
-  this.toString = () => {
-    const simplePairs = [];
-    this.pairs.forEach((p) => {
-      const pair = p;
-      pair.ws = null;
-      simplePairs.push(p);
-    });
-    return JSON.stringify({
-      name: this.name,
-      pairs: simplePairs,
-      browserRequests: this.browserRequests
-    }, null, 4);
   };
 }
 

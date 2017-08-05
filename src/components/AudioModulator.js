@@ -25,10 +25,14 @@ function sendMiddleC(context) {
   const noteOnMessage = [0x90, 0x35, 0x7f]; // note on, middle C, full velocity
   const output = context.state.output;
   // log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
-  output.send(noteOnMessage); // omitting the timestamp means send immediately.
-  // Inlined array creation- note off, middle C,
-  // release velocity = 64, timestamp = now + 1000ms.
-  output.send([0x80, 60, 0x40], window.performance.now() + 200.0);
+  try {
+    output.send(noteOnMessage); // omitting the timestamp means send immediately.
+    // Inlined array creation- note off, middle C,
+    // release velocity = 64, timestamp = now + 1000ms.
+    output.send([0x80, 60, 0x40], window.performance.now() + 200.0);
+  } catch (e) {
+    console.log('Not a valid MIDI output.');
+  }
 }
 
 function onMIDIMessage(event) {
@@ -57,12 +61,13 @@ class AudioModulator extends Component {
       midi: null,
       isMidiReady: false,
       output: null,
-      heartBeats: [],
-      averageLatency: 0,
-      browserRequestId: null
+      messages: [],
+      averageLatencies: { serverBrowser: 0, clientServer: 0, clientBrowser: 0 },
+      id: null
     };
     this.getOutputs = this.getOutputs.bind(this);
     this.calculateLatency = this.calculateLatency.bind(this);
+
     log = new Logger('AudioModulator', this.props.config).log;
   }
 
@@ -89,20 +94,17 @@ class AudioModulator extends Component {
           log(`Opening socket on: ${websocketHost}`);
           const ws = new WebSocket(websocketHost);
           ws.onmessage = (event) => {
-            log('Got websocket data: ', event.data);
+            log('Got websocket data (browser): ', event.data);
             const data = JSON.parse(event.data);
+            data.ts.browserTS = Date.now();
+            log('Got websocket data (browser) -> (injected browserTS): ', data);
+            this.calculateLatency(data);
             self.props.onMessage(data);
 
-            if (data.type === 'heartBeat') {
-              // log('Got heartBeat: ', data);
-              data.payload.timestampClientReceive = Date.now();
-              self.calculateLatency(data);
-            }
-
-            if (data.type === 'browserRequestId') {
-              log('Got browserRequestId: ', data);
+            if (data.type === 'pairing') {
+              log('Got pairing message: ', data);
               self.setState({
-                browserRequestId: data.payload.browserRequestId
+                id: data.payload.targetId
               });
             }
 
@@ -162,7 +164,7 @@ class AudioModulator extends Component {
               self.setState({
                 output
               }, () => {
-                log('Changed midi output to: ', bypassMIDIMoutput);
+                log('Changed midi output to: ', getFormattedOutput(output));
                 self.props.onMIDIOutputChange(self.state.output);
               });
             }}
@@ -191,33 +193,57 @@ class AudioModulator extends Component {
     );
   }
 
+  getFormattedLatencies() {
+    const latencies = this.state.averageLatencies;
+    return `Server to browser latency is ${latencies.serverBrowser} ms. Client to server latency is ${latencies.clientServer} ms. Client to browswer latency is ${latencies.clientBrowser} ms.`;
+  }
+
   calculateLatency(data) {
-    // log('AudioModulator calculateLatency:', data);
+    log('AudioModulator calculateLatency:', data);
     const BUFFER_SIZE = 5;
-    const heartBeats = [].concat(this.state.heartBeats);
-    if (heartBeats.length >= BUFFER_SIZE) {
-      heartBeats.shift();
-      heartBeats.push(data);
+    const messages = [].concat(this.state.messages);
+    if (messages.length >= BUFFER_SIZE) {
+      messages.shift();
+      messages.push(data);
     } else {
-      heartBeats.push(data);
+      messages.push(data);
     }
     this.setState({
-      heartBeats
+      messages
     }, () => {
-      let totalDelay = 0;
-      heartBeats.forEach((hb) => {
-        const diff = hb.payload.timestampClientReceive - hb.payload.timestampServerEmit;
-        // log("Single heartBeat latency (websocket server to client) is: ", diff);
-        totalDelay += diff;
-      });
-      const averageLatency = totalDelay / heartBeats.length;
-      this.props.onAverageLatencyUpdate(averageLatency);
-      this.setState({
-        averageLatency
-      }, () => {
-        if (this.props.isHeartBeatEanbled && this.state.output) {
-          sendMiddleC(this);
+      let totalDelayServerBrowser = 0;
+      let totalDelayClientServer = 0;
+      let totalDelayClientBrowser = 0;
+
+      let serverBrowserCount = 0;
+      let clientServerCount = 0;
+      let clientBrowserCount = 0;
+
+      messages.forEach((msg) => {
+        serverBrowserCount += 1;
+        const diffServerBrowser = msg.ts.browserTS - msg.ts.serverTS;
+        totalDelayServerBrowser += diffServerBrowser;
+
+        if (msg.ts.clientTS) {
+          clientServerCount += 1;
+          clientBrowserCount += 1;
+          const diffClientServer = msg.ts.serverTS - msg.ts.clientTS;
+          const diffClientBrowser = msg.ts.browserTS - msg.ts.clientTS;
+          totalDelayClientServer += diffClientServer;
+          totalDelayClientBrowser += diffClientBrowser;
         }
+      });
+      const round = num => Math.round(num * 100) / 100;
+      const averageLatencies = {
+        serverBrowser: round(totalDelayServerBrowser / serverBrowserCount),
+        // eslint-disable-next-line max-len
+        clientServer: round(clientServerCount === 0 ? 0 : totalDelayClientServer / clientServerCount),
+        // eslint-disable-next-line max-len
+        clientBrowser: round(clientBrowserCount === 0 ? 0 : totalDelayClientBrowser / clientBrowserCount)
+      };
+      this.props.onAverageLatencyUpdate(averageLatencies);
+      this.setState({
+        averageLatencies
       });
     });
   }
@@ -229,8 +255,8 @@ class AudioModulator extends Component {
         <p>
           Your browser&apos;s MIDI is {this.state.isMidiReady ? 'ready' : 'not ready'}.
           The selected MIDI output is <span style={selectedOutputStyle}>{getFormattedOutput(this.state.output)}</span>.
-          Click on the labels to switch MIDI output. The average latency is {this.state.averageLatency} ms.
-          Your device pairing number is: {this.state.browserRequestId !== null ? this.state.browserRequestId : 'Loading...'}
+          Click on the labels to switch MIDI output. {this.getFormattedLatencies()}
+          Your device pairing number is: {this.state.id !== null ? this.state.id : 'Loading...'}
         </p>
         {this.state.isMidiReady ? this.getOutputs() : null}
       </div>

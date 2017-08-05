@@ -6,25 +6,40 @@ const run = (name, wss, connector, send, connectedCallback = null, closedCallbac
   wss.on('connection', (ws) => {
     console.log(`${name}: connection opened.`);
     // Send a unique request id
-    const browserRequestId = connector.addBrowserRequest();
-    const pairingMessage = { type: 'browserRequestId', payload: { browserRequestId } };
-    console.log(`${name}: sending a browser request id.`, pairingMessage);
+    const id = connector.addPair({ ws, timestamp: Date.now() });
+    const pairingMessage = {
+      type: 'pairing',
+      ts: {
+        serverTS: Date.now()
+      },
+      payload: {
+        targetId: id,
+        obj: { }
+      }
+    };
+    console.log(`${name}: sending a pairing request to the browser.`, pairingMessage);
     ws.send(JSON.stringify(pairingMessage), () => {});
-    connector.addPair({ browserRequestId, ws, timestamp: Date.now() });
     // Send heartbeat
-    const id = setInterval(() => {
-      const message = { type: 'heartBeat', payload: { timestampServerEmit: Date.now() } };
-      console.log(`${name}: sending a heart beat`);
+    const heartBeatId = setInterval(() => {
+      const message = {
+        type: 'heartBeat',
+        ts: {
+          serverTS: Date.now()
+        },
+        payload: {
+          targetId: id,
+          obj: { }
+        }
+      };
+      console.log(`${name}: sending a heart beat to the browser.`);
       ws.send(JSON.stringify(message), () => {});
     }, 1000);
 
     // Clear heartbeat interval
     ws.on('close', () => {
-      console.log(`${name}: connection closed.`);
-      clearInterval(id);
-      connector.removeBrowserRequest(browserRequestId);
-      connector.removePair(browserRequestId);
-
+      console.log(`${name}: connection closed by browser.`);
+      clearInterval(heartBeatId);
+      connector.removePair(id);
       // connection closedCallback
       console.log('connector status after close: \n', connector);
       closedCallback(connector);
@@ -32,29 +47,16 @@ const run = (name, wss, connector, send, connectedCallback = null, closedCallbac
 
     // send message to connections
     ws.on('message', (data) => {
-      console.log('Got message: \n', data);
+      console.log('Got message (server): \n', data);
       const parsedData = JSON.parse(data);
+      parsedData.ts.serverTS = Date.now();
+      if (parsedData.type === 'pairing') {
+        console.log('connector status before pairing: \n', connector);
+        connector.markPaired(parsedData.payload.targetId);
+        console.log('connector status after pairing: \n', connector);
+      }
       if (parsedData.type === 'audiomodulator') {
-        if (parsedData.target === 'broadcast') {
-          console.log('broadcasting message to all connections.', parsedData);
-          // send message to broadcast
-          connector.getPairs().forEach((pair) => {
-            send(pair.browserRequestId, parsedData);
-          });
-        } else {
-          console.log('sending message to to single connection.', parsedData);
-          // send message to single target
-          connector.getPairs().forEach((pair) => {
-            const target = parseInt(parsedData.target, 10);
-            const brId = parseInt(pair.browserRequestId, 10);
-            if (brId === target) {
-              console.log('connection match ', { brId, target });
-              send(pair.browserRequestId, parsedData);
-            } else {
-              console.log('connection mismatch ', { brId, target });
-            }
-          });
-        }
+        send(parsedData.payload.targetId, parsedData);
       }
     });
 
@@ -84,12 +86,12 @@ function AMWS(name, wss) {
         this.connector = connector;
       });
   };
-  this.send = (browserRequestId, obj, cb) => {
+  this.send = (id, obj, cb) => {
     console.log('connector status before sending message: \n', this.connector);
     this.connector.getPairs()
     .forEach((pair) => {
-      if (pair.browserRequestId === browserRequestId) {
-        console.log(`${name}: sending ${JSON.stringify(obj)} to pair ${browserRequestId}`);
+      if (pair.id === id && pair.isPaired) {
+        console.log(`${name}: sending ${JSON.stringify(obj)} to pair ${id}`);
         pair.ws.send(JSON.stringify(obj), cb);
       }
     });
