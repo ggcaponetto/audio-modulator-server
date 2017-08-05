@@ -35,6 +35,16 @@ function sendMiddleC(context) {
   }
 }
 
+function sendMidi(context, message) {
+  const output = context.state.output;
+  // log(`Sending ${JSON.stringify(noteOnMessage)} to: `, output);
+  try {
+    output.send(message); // omitting the timestamp means send immediately.
+  } catch (e) {
+    console.log('Not a valid MIDI output.');
+  }
+}
+
 function onMIDIMessage(event) {
   /* eslint-disable no-unused-vars */
   let str = `MIDI message received at timestamp ${event.timestamp}[${event.data.length} bytes]: `;
@@ -110,7 +120,7 @@ class AudioModulator extends Component {
 
             if (data.type === 'audiomodulator') {
               log('Got audiomodulator: ', data);
-              sendMiddleC(self);
+              sendMidi(self, data.payload.obj);
             }
           };
         } catch (e) {
@@ -195,7 +205,7 @@ class AudioModulator extends Component {
 
   getFormattedLatencies() {
     const latencies = this.state.averageLatencies;
-    return `Server to browser latency is ${latencies.serverBrowser} ms. Client to server latency is ${latencies.clientServer} ms. Client to browswer latency is ${latencies.clientBrowser} ms.`;
+    return `Average server to browser latency is ${latencies.serverBrowser} ms. Average client to server latency is ${latencies.clientServer} ms. Average client to browswer latency is ${latencies.clientBrowser} ms.`;
   }
 
   calculateLatency(data) {

@@ -52,7 +52,21 @@ const run = (name, wss, connector, send, connectedCallback = null, closedCallbac
       parsedData.ts.serverTS = Date.now();
       if (parsedData.type === 'pairing') {
         console.log('connector status before pairing: \n', connector);
-        connector.markPaired(parsedData.payload.targetId);
+        try {
+          connector.markPaired(parsedData.payload.targetId);
+        } catch (e) {
+          console.log(e);
+          ws.send(JSON.stringify({
+            type: 'error',
+            ts: {
+              serverTS: Date.now()
+            },
+            payload: {
+              targetId: id,
+              obj: { message: e }
+            }
+          }), () => {});
+        }
         console.log('connector status after pairing: \n', connector);
       }
       if (parsedData.type === 'audiomodulator') {

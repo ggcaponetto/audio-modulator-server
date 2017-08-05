@@ -15,9 +15,11 @@ function Connector(name) {
     const self = this;
     this.pairs.forEach((pair, i) => {
       console.log(`Checking pair with id ${pair.id} needs to be paired`);
-      if (pair.id === id) {
+      if (pair.id === id && !pair.isPaired) {
         console.log(`Checking pair with id ${pair.id} needs to be paired: id match found.`);
         self.pairs[i].isPaired = true;
+      } else if (pair.id === id && pair.isPaired) {
+        throw new Error(`Pairing number ${id} has already been used.`);
       }
     });
   };
